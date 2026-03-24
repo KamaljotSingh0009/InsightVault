@@ -1,0 +1,268 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Vault - InsightVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Navbar (Same as Dashboard) */
+        .navbar-custom {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+        }
+
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .profile-icon {
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Page Header */
+        .page-header {
+            padding: 40px 0 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        /* Vault Cards */
+        .report-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.08);
+            border-color: #bfdbfe;
+        }
+
+        .card-header-custom {
+            padding: 15px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body-custom {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-analyzed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .btn-action {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: 0.2s;
+            width: 100%;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-view {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .btn-view:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        /* Search Bar */
+        .search-box {
+            position: relative;
+            max-width: 300px;
+        }
+
+        .search-box input {
+            padding-left: 35px;
+            border-radius: 50px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-custom sticky-top">
+        <div class="container">
+            <a class="brand-logo" href="{% url 'dashboard' %}"><i class="fa-solid fa-shield-heart"></i> InsightVault</a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="{% url 'dashboard' %}"
+                    class="text-decoration-none text-muted fw-medium d-none d-md-block me-3">&larr; Back to
+                    Dashboard</a>
+                <div class="dropdown">
+                    <a class="text-decoration-none text-dark d-flex align-items-center gap-2 dropdown-toggle" href="#"
+                        data-bs-toggle="dropdown">
+                        <span class="fw-medium d-none d-sm-block">{{ request.user.first_name }}</span>
+                        <div class="profile-icon">{{ request.user.first_name|first|upper }}</div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">🚪 Sign Out</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container page-header flex-wrap gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">My Vault 🗄️</h2>
+            <p class="text-muted mb-0">Securely browse and manage your digitized health reports.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="form-control" placeholder="Search reports...">
+            </div>
+            <a href="{% url 'upload_report' %}" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm"><i
+                    class="fa-solid fa-plus me-1"></i> Upload New</a>
+        </div>
+    </div>
+
+    <div class="container mb-5 mt-3">
+        <div class="row g-4">
+
+            <div class="col-md-6 col-lg-4">
+                <div class="report-card">
+                    <div class="card-header-custom">
+                        <span class="text-muted small fw-bold"><i class="fa-regular fa-calendar me-1"></i> Oct 24,
+                            2026</span>
+                        <span class="status-badge status-analyzed">Analyzed</span>
+                    </div>
+                    <div class="card-body-custom d-flex flex-column">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="bg-light p-3 rounded-3 text-primary"><i
+                                    class="fa-solid fa-file-medical fs-4"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Complete Blood Count</h5>
+                                <p class="text-muted small mb-0">Lab: Dr. Lal PathLabs</p>
+                            </div>
+                        </div>
+                        <div class="mt-auto pt-3 border-top border-light">
+                            <a href="#" class="btn-action btn-view">View Insights <i
+                                    class="fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="report-card">
+                    <div class="card-header-custom">
+                        <span class="text-muted small fw-bold"><i class="fa-regular fa-calendar me-1"></i> Sep 12,
+                            2026</span>
+                        <span class="status-badge status-analyzed">Analyzed</span>
+                    </div>
+                    <div class="card-body-custom d-flex flex-column">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="bg-light p-3 rounded-3 text-primary"><i class="fa-solid fa-flask fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Lipid Profile Test</h5>
+                                <p class="text-muted small mb-0">Lab: SRL Diagnostics</p>
+                            </div>
+                        </div>
+                        <div class="mt-auto pt-3 border-top border-light">
+                            <a href="#" class="btn-action btn-view">View Insights <i
+                                    class="fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+                <div class="report-card">
+                    <div class="card-header-custom">
+                        <span class="text-muted small fw-bold"><i class="fa-regular fa-calendar me-1"></i> Today</span>
+                        <span class="status-badge status-pending">Processing...</span>
+                    </div>
+                    <div class="card-body-custom d-flex flex-column">
+                        <div class="d-flex align-items-start gap-3 mb-3">
+                            <div class="bg-light p-3 rounded-3 text-secondary"><i
+                                    class="fa-solid fa-file-image fs-4"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-1">Thyroid Report</h5>
+                                <p class="text-muted small mb-0">Uploaded 2 hours ago</p>
+                            </div>
+                        </div>
+                        <div class="mt-auto pt-3 border-top border-light">
+                            <button disabled class="btn-action btn-view text-muted"
+                                style="background: #f1f5f9; border-color: #e2e8f0;">AI is extracting data...</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

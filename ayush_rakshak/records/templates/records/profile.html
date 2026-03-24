@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - InsightVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        /* Navbar */
+        .navbar-custom {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 0;
+        }
+
+        .brand-logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .profile-icon {
+            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            padding: 40px 0 30px 0;
+        }
+
+        /* Quick Stats Cards */
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
+        }
+
+        .stat-icon {
+            font-size: 2.2rem;
+        }
+
+        /* Main Feature Action Cards */
+        .feature-box {
+            background: white;
+            border-radius: 20px;
+            padding: 35px 20px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            color: inherit;
+        }
+
+        .feature-box:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
+            border-color: #bfdbfe;
+            color: inherit;
+        }
+
+        .icon-wrapper {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 20px auto;
+            transition: 0.3s;
+        }
+
+        .feature-box:hover .icon-wrapper {
+            transform: scale(1.1);
+        }
+
+        /* Custom Icon Colors */
+        .upload-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .vault-icon {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .risk-icon {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .diet-icon {
+            background: #dcfce7;
+            color: #10b981;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-custom sticky-top">
+        <div class="container">
+            <a class="brand-logo" href="#"><i class="fa-solid fa-shield-heart"></i> InsightVault</a>
+            <div class="dropdown">
+                <a class="text-decoration-none text-dark d-flex align-items-center gap-2 dropdown-toggle" href="#"
+                    role="button" data-bs-toggle="dropdown">
+                    <span class="fw-medium d-none d-sm-block">{{ request.user.first_name }}</span>
+                    <div class="profile-icon">{{ request.user.first_name|first|upper }}</div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                    <li>
+                        <h6 class="dropdown-header">Account Options</h6>
+                    </li>
+                    <li><a class="dropdown-item fw-medium" href="#">👤 Edit Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">🚪 Sign Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container welcome-section">
+        <h2 class="fw-bold">Welcome back, {{ request.user.first_name }}! 👋</h2>
+        <p class="text-muted">Here is the overview of your digital health archive.</p>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon" style="color: #2563eb;"><i class="fa-solid fa-file-waveform"></i></div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">0</h3>
+                        <span class="text-muted small fw-medium text-uppercase">Total Reports</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">Good</h3>
+                        <span class="text-muted small fw-medium text-uppercase">Latest Health Status</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card d-flex align-items-center gap-3">
+                    <div class="stat-icon" style="color: #f59e0b;"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div>
+                        <h3 class="mb-0 fw-bold">Pending</h3>
+                        <span class="text-muted small fw-medium text-uppercase">Diet Plan Update</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <h5 class="fw-bold mb-3">Quick Actions</h5>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'upload_report' %}" class="feature-box">
+                    <div class="icon-wrapper upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                    <h5 class="fw-bold">Upload Report</h5>
+                    <p class="text-muted small mb-0">Digitize and extract new lab results instantly.</p>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <a href="#" class="feature-box">
+                    <div class="icon-wrapper vault-icon"><i class="fa-solid fa-folder-open"></i></div>
+                    <h5 class="fw-bold">My Vault</h5>
+                    <p class="text-muted small mb-0">View your past reports and interactive graphs.</p>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <a href="#" class="feature-box">
+                    <div class="icon-wrapper risk-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h5 class="fw-bold">Risk Analysis</h5>
+                    <p class="text-muted small mb-0">Check AI predictions and highlighted anomalies.</p>
+                </a>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <a href="#" class="feature-box">
+                    <div class="icon-wrapper diet-icon"><i class="fa-solid fa-leaf"></i></div>
+                    <h5 class="fw-bold">Smart Diet Plan</h5>
+                    <p class="text-muted small mb-0 ">Get AI-generated meal plans tailored for you.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect
+import os
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .models import UserProfile
+from django.contrib import messages
+from .models import MedicalRecord
 
 # STEP 1: Basic Info
 def register_step1(request):
@@ -78,7 +81,26 @@ def logout_user(request):
 # UPLOAD PAGE LOGIC (Secured)
 @login_required(login_url='login')
 def upload_report(request):
-    return render(request, 'records/upload.html')
+     if request.method == 'POST':
+        # 1. HTML form se photo nikalna (tune name="report_image" diya tha)
+        image_file = request.FILES.get('report_image')
+
+        if image_file:
+            # 2. Database mein naya record banana
+            record = MedicalRecord.objects.create(
+                patient=request.user,       # Kis user ne upload kiya
+                report_image=image_file     # Wo photo file
+            )
+            record.save()
+            
+            # 3. Success message dena aur 'vault' page par bhej dena
+            messages.success(request, 'Report successfully uploaded!')
+            return redirect('vault')  # Dhyan rakhna urls.py mein vault ka naam yahi ho
+            
+        else:
+            messages.error(request, 'Please select an image file.')
+
+     return render(request, 'records/upload.html')
 
 
 def home(request):
@@ -95,5 +117,35 @@ def dashboard(request):
 
 @login_required(login_url='login')
 def my_vault(request):
-    # Aage chalke hum yahan database se user ki real reports bhejenge
-    return render(request, 'records/vault.html')
+    # 1. Login kiye hue user ki saari reports DB se nikalna 
+    # (order_by('-uploaded_at') se sabse nayi report sabse upar aayegi)
+    user_reports = MedicalRecord.objects.filter(patient=request.user).order_by('-uploaded_at')
+    
+    # 2. In reports ko ek dictionary mein pack karke HTML ko bhej dena
+    context = {
+        'reports': user_reports
+    }
+    return render(request, 'records/vault.html', context)
+
+
+
+
+@login_required(login_url='login')
+def delete_report(request, report_id):
+    # 1. Report dhoondho
+    report = get_object_or_404(MedicalRecord, id=report_id, patient=request.user)
+    
+    # --- NAYA LOGIC SHURU ---
+    # 2. Database se udane se pehle, laptop ke folder se photo delete karo
+    if report.report_image:
+        image_path = report.report_image.path
+        if os.path.exists(image_path):
+            os.remove(image_path) # Ye command asli file ko kachre ke dabbe mein daal degi
+    # --- NAYA LOGIC KHATAM ---
+
+    # 3. Ab database wali row delete karo
+    report.delete()
+    
+    # 4. Success message aur redirect
+    messages.success(request, 'Report and image permanently deleted!')
+    return redirect('vault')

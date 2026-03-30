@@ -118,6 +118,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 # Ye Django ko bata raha hai ki images kahan dhoondhni hain
 STATICFILES_DIRS = [
+    BASE_DIR / 'static',
     BASE_DIR / 'records/static',
 ]
 

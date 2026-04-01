@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Database
+db.sqlite3
+
+# User Uploads (Privacy)
+media/
+uploads/
+
+# Virtual Environment
+myenv/
+
+# Python Cache
+__pycache__/
+*.pyc

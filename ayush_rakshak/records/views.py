@@ -1,4 +1,6 @@
 import os
+import json
+import time 
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -6,6 +8,12 @@ from django.contrib.auth.decorators import login_required
 from .models import UserProfile
 from django.contrib import messages
 from .models import MedicalRecord
+from google import genai
+from dotenv import load_dotenv
+import PIL.Image
+
+load_dotenv()
+
 
 # STEP 1: Basic Info
 def register_step1(request):
@@ -76,31 +84,84 @@ def login_user(request):
 # LOGOUT LOGIC
 def logout_user(request):
     logout(request)
-    return redirect('login')
+    messages.success(request, "You have been successfully logged out.")
+    return redirect('home')
 
-# UPLOAD PAGE LOGIC (Secured)
 @login_required(login_url='login')
 def upload_report(request):
-     if request.method == 'POST':
-        # 1. HTML form se photo nikalna (tune name="report_image" diya tha)
+    if request.method == 'POST':
+        # 1. HTML form se photo nikalna
         image_file = request.FILES.get('report_image')
 
         if image_file:
-            # 2. Database mein naya record banana
+            # 2. Database mein naya record banana (Pehle photo save karni zaroori hai)
             record = MedicalRecord.objects.create(
-                patient=request.user,       # Kis user ne upload kiya
-                report_image=image_file     # Wo photo file
+                patient=request.user,       
+                report_image=image_file     
             )
-            record.save()
+            record.save() # Photo tere folder mein chali gayi
             
-            # 3. Success message dena aur 'vault' page par bhej dena
-            messages.success(request, 'Report successfully uploaded!')
-            return redirect('vault')  # Dhyan rakhna urls.py mein vault ka naam yahi ho
+            
+            
+                # A. Photo ko folder se open karo
+            
+            img = PIL.Image.open(record.report_image.path)
+            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+            
+            ai_prompt = """
+            You are an expert medical data extractor. Read this medical report image.
+            1. Identify the type of report (e.g., Blood Test, Lipid Profile, etc.).
+            2. Extract all important medical parameters and their values.
+            3. Ignore patient name, hospital name, and contact details for privacy.
+            Return ONLY a valid JSON object in this exact format, without any extra text or markdown:
+            {"Report_Type": "Name", "Data": {"Hemoglobin": "14", "Sugar": "120"}}
+            """
+
+            max_retries = 3  # Hum 3 baar try karenge
+            
+            for attempt in range(max_retries):
+                try:
+                    print(f"Attempt {attempt + 1}: AI se data maang rahe hain...")
+                    
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=[ai_prompt, img]
+                    )
+                    
+                    # Agar yahan tak aa gaya, matlab Data mil gaya.
+                    record.extracted_data = response.text
+                    record.status = 'success'
+                    record.save() 
+                    
+                    messages.success(request, 'Report uploaded AND analyzed successfully! 🚀')
+                    break  # Success milte hi loop se bahar aa jao
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    print(f"Error on attempt {attempt + 1}: {error_msg}")
+                    
+                    # Agar Google busy hai (UNAVAILABLE ya 429 error), toh wait karke dobara try karo
+                    if "UNAVAILABLE" in error_msg or "429" in error_msg or "high demand" in error_msg.lower():
+                        if attempt < max_retries - 1: # Agar aakhiri try nahi tha
+                            print("Google busy hai. 3 seconds wait karke dobara try kar rahe hain... ⏳")
+                            time.sleep(3) # 3 second ruko aur phir try karo
+                            continue # Loop ko aage badhao
+                    record.status = 'failed' # <-- new LINE
+                    record.save() # <-- new LINE yahan bhi save karna zaroori hai taaki status update ho jaye
+
+                    # Agar koi aur hi error hai, ya 3 baar fail ho chuka hai, toh warning de do
+                    messages.warning(request, 'Server is experiencing extremely high demand. The report is saved, but AI extraction failed. Please try again later.')
+                    break
+           
+            
+
+            # 3. 'vault' page par bhej dena
+            return redirect('vault') 
             
         else:
             messages.error(request, 'Please select an image file.')
 
-     return render(request, 'records/upload.html')
+    return render(request, 'records/upload.html')
 
 
 def home(request):
@@ -121,6 +182,17 @@ def my_vault(request):
     # (order_by('-uploaded_at') se sabse nayi report sabse upar aayegi)
     user_reports = MedicalRecord.objects.filter(patient=request.user).order_by('-uploaded_at')
     
+    for record in user_reports:
+        if record.extracted_data:  # Agar AI ne data nikala hai toh
+            try:
+                # Text ko proper Dictionary mein badal kar ek naye variable mein daal do
+                record.parsed_data = json.loads(record.extracted_data) 
+            except Exception as e:
+                print(f"JSON Error: {e}")
+                record.parsed_data = None
+        else:
+            record.parsed_data = None
+
     # 2. In reports ko ek dictionary mein pack karke HTML ko bhej dena
     context = {
         'reports': user_reports
@@ -149,3 +221,5 @@ def delete_report(request, report_id):
     # 4. Success message aur redirect
     messages.success(request, 'Report and image permanently deleted!')
     return redirect('vault')
+
+

@@ -19,6 +19,12 @@ class MedicalRecord(models.Model):
     extracted_data = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    ANALYSIS_STATUS = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+        ('failed', 'Failed'),
+    ]
+    status = models.CharField(max_length=20, choices=ANALYSIS_STATUS, default='pending')
 
     def __str__(self):
         return f"Report of {self.patient.username} on {self.uploaded_at.strftime('%Y-%m-%d')}"

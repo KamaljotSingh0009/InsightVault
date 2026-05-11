@@ -17,6 +17,8 @@ from dotenv import load_dotenv
 import PIL.Image
 from django.db.models import Q
 from django.core.paginator import Paginator
+import fitz # PyMuPDF
+import io
 
 load_dotenv()
 
@@ -263,7 +265,20 @@ def upload_report(request):
             
                 # A. Photo ko folder se open karo
             
-            img = PIL.Image.open(record.report_image.path)
+           # A. File ka path check karo ki PDF hai ya Image
+            file_path = record.report_image.path
+            
+            if file_path.lower().endswith('.pdf'):
+                # Agar PDF hai, toh pehla page Image bana do
+                pdf_document = fitz.open(file_path)
+                first_page = pdf_document.load_page(0)
+                pix = first_page.get_pixmap()
+                img = PIL.Image.open(io.BytesIO(pix.tobytes()))
+                pdf_document.close() # Memory free karne ke liye
+            else:
+                # Agar Image hai, toh direct khol lo
+                img = PIL.Image.open(file_path)
+
             client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
             
             ai_prompt = """
@@ -292,7 +307,7 @@ def upload_report(request):
                     record.status = 'success'
                     record.save() 
                     
-                    messages.success(request, 'Report uploaded AND analyzed successfully! 🚀')
+                    messages.success(request, 'Report uploaded AND analyzed successfully! ')
                     break  # Success milte hi loop se bahar aa jao
                     
                 except Exception as e:
@@ -302,7 +317,7 @@ def upload_report(request):
                     # Agar Google busy hai (UNAVAILABLE ya 429 error), toh wait karke dobara try karo
                     if "UNAVAILABLE" in error_msg or "429" in error_msg or "high demand" in error_msg.lower():
                         if attempt < max_retries - 1: # Agar aakhiri try nahi tha
-                            print("Google busy hai. 3 seconds wait karke dobara try kar rahe hain... ⏳")
+                            print("Google is busy ,waiting for 3 seconds before retrying...")
                             time.sleep(3) # 3 second ruko aur phir try karo
                             continue # Loop ko aage badhao
                     record.status = 'failed' # <-- new LINE
@@ -318,7 +333,7 @@ def upload_report(request):
             return redirect('vault') 
             
         else:
-            messages.error(request, 'Please select an image file.')
+            messages.error(request, 'Please select an image or PDF file.')
 
     return render(request, 'records/upload.html')
 

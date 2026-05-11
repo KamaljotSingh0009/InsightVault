@@ -129,7 +129,7 @@
                     <li>
                         <h6 class="dropdown-header">My Account</h6>
                     </li>
-                    <li><a class="dropdown-item rounded-2 fw-medium mb-1" href="#"> My Profile</a></li>
+                    <li><a class="dropdown-item rounded-2 fw-medium mb-1" href="{% url 'vault' %}"> Vault</a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
@@ -153,9 +153,9 @@
             
                 <div class="file-drop-area mb-4">
                     <div class="upload-icon">📄</div>
-                    <h6 class="fw-bold text-dark mb-1">Click to select an image</h6>
-                    <p class="text-muted small mb-0">Supports JPG, PNG (Max 5MB)</p>
-                    <input type="file" name="report_image" required accept="image/*">
+                    <h6 class="fw-bold text-dark mb-1">Click to select an image or a File</h6>
+                    <p class="text-muted small mb-0">Supports PDF, JPG, PNG (Max 5MB)</p>
+                    <input type="file" name="report_image" required accept=".pdf, .png, .jpg, .jpeg">
                 </div>
             
                 <button type="submit" id="submitBtn"

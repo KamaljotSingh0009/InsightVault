@@ -35,7 +35,7 @@ class UserProfile(models.Model):
         return f"{self.user.username} | {p_id} | Dr: {doctor_name}"
 class MedicalRecord(models.Model):
     patient = models.ForeignKey(User, on_delete=models.CASCADE)
-    report_image = models.ImageField(upload_to='patient_reports/')
+    report_image = models.FileField(upload_to='patient_reports/')
     extracted_data = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)

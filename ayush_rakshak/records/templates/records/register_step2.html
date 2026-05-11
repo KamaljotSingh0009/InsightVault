@@ -10,9 +10,9 @@
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <style>
         :root {
-            --blue-deep: #1a3a6b;
-            --blue-mid: #2563eb;
-            --blue-accent: #60a5fa;
+            --blue-deep: #065f46;
+            --blue-mid: #10b981;
+            --blue-accent: #6ee7b7;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
@@ -20,7 +20,7 @@
 
         body {
             font-family: 'DM Sans', sans-serif;
-            background: linear-gradient(135deg, #e0ecff 0%, #f0f4ff 50%, #e8f0fe 100%);
+            background: linear-gradient(360deg, #f8fafc 6%, #e2e8f0 20%, #d1fae5 100%);            min-height: 100vh;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -79,7 +79,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #dbeafe;
+            background: #d1fae5;
             color: var(--blue-mid);
             border-radius: 50px;
             padding: 4px 12px;
@@ -139,7 +139,7 @@
         }
 
         .input-group:focus-within {
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
             border-color: var(--blue-mid);
             background: #ffffff;
         }
@@ -183,7 +183,7 @@
         }
 
         .btn-primary-custom {
-            background: linear-gradient(135deg, var(--blue-mid), #1d4ed8);
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             border-radius: 50px;
             padding: 12px;
@@ -197,12 +197,11 @@
 
         .btn-primary-custom:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
         }
 
         /* Right Side Styling (Kept exactly intact) */
         .right-side-bg {
-            background-image: url('PLACEHOLDER_IMAGE_LINK');
             background-color: var(--blue-deep);
             background-size: cover;
             background-position: center;
@@ -213,7 +212,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(145deg, #1a3a6b 0%, #2563eb 60%, #60a5fa 100%);
+            background: linear-gradient(145deg, #065f46 0%, #10b981 60%, #6ee7b7 100%);
             opacity: 0.85;
         }
 
@@ -281,9 +280,9 @@
                                 <label class="form-label">Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" name="password" id="pwd"
-                                        placeholder="At least 6 characters" required>
+                                        placeholder="At least 6 characters" required >
                                     <span class="input-group-text" onclick="toggleVisibility('pwd', 'eye1')"><span
-                                            id="eye1">👁️</span></span>
+                                            id="eye1">☐</span></span>
                                 </div>
                             </div>
 
@@ -291,13 +290,14 @@
                                 <label class="form-label">Confirm Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" name="confirm_password" id="cpwd"
-                                        placeholder="Re-enter password" required>
+                                        placeholder="Re-enter password" required >
                                     <span class="input-group-text" onclick="toggleVisibility('cpwd', 'eye2')"><span
-                                            id="eye2">👁️</span></span>
+                                            id="eye2">☐</span></span>
                                 </div>
                             </div>
+                            <div id="pass-message" class="mt-1 small"></div>
 
-                            <button type="submit" class="btn-primary-custom mb-3">Complete Registration 🎉</button>
+                            <button type="submit" id="submitBtn" class="btn-primary-custom mb-3">Complete Registration </button>
                         </form>
 
                         <div class="text-center mt-2">
@@ -339,17 +339,52 @@
     </div>
 
     <script>
+        
         function toggleVisibility(inputId, iconId) {
             var input = document.getElementById(inputId);
             var icon = document.getElementById(iconId);
             if (input.type === "password") {
                 input.type = "text";
-                icon.innerText = "🙈";
+                icon.innerText = "☑";
             } else {
                 input.type = "password";
-                icon.innerText = "👁️";
+                icon.innerText = "☐";
             }
         }
+        
+    
+        const pass1 = document.getElementById('pwd');
+        const pass2 = document.getElementById('cpwd');
+        const message = document.getElementById('pass-message');
+        const submitBtn = document.getElementById('submitBtn'); // Button ko fetch kiya
+        submitBtn.disabled = true; // Shuru mein button ko disable rakho
+        function checkPasswords() {
+            // Har baar type karne pe pehle button ko block rakho
+            submitBtn.disabled = true;
+
+            if (pass2.value === "") {
+                message.innerHTML = "";
+                return;
+            }
+
+            if (pass1.value.length > 0 && pass1.value.length < 8) {
+                message.innerHTML = "Password must be at least 8 characters!";
+                message.className = "mt-1 small text-danger fw-bold";
+                return;
+            }
+
+            if (pass1.value === pass2.value) {
+                message.innerHTML = "Password Matched!";
+                message.className = "mt-1 small text-success fw-bold";
+                // Dono conditions pass (length >= 8 AND match) tabhi button unfreeze hoga
+                submitBtn.disabled = false;
+            } else {
+                message.innerHTML = "Passwords do not match";
+                message.className = "mt-1 small text-danger fw-bold";
+            }
+        }
+        pass1.addEventListener('input', checkPasswords);
+        pass2.addEventListener('input', checkPasswords);
     </script>
 </body>
 

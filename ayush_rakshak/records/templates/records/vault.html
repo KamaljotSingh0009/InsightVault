@@ -10,76 +10,96 @@
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
+       body {
             font-family: 'DM Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #d1fae5 100%);
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh; 
         }
 
-        /* Navbar (Same as Dashboard) */
-        .navbar-custom {
+        /* SIDEBAR STYLING (Same as Risk Analysis) */
+        .sidebar {
+            height: 100vh;
             background: white;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 12px 0;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 10px;
+            position: fixed;
+            width: 260px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
         }
 
-        .brand-logo {
-            font-size: 1.4rem;
+        .sidebar-title {
+            font-size: 1.2rem;
+            color: #10b981;
             font-weight: 700;
-            color: #2563eb;
-            text-decoration: none;
+            margin-bottom: 25px;
+            padding-left: 10px;
         }
 
-        .profile-icon {
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
-            color: white;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
+        .nav-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-weight: bold;
+            justify-content: space-between;
         }
 
-        /* Page Header */
+        .nav-btn:hover {
+            background: #f0f2f5;
+        }
+
+        .nav-btn.active {
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+        }
+
+        .nav-btn i {
+            width: 20px;
+        }
+
+        /* MAIN CONTENT STYLING */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 40px;
+        }
+
+        /* HEADER (Top area inside main content) */
         .page-header {
-            padding: 40px 0 20px 0;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: center;
+            margin-bottom: 30px;
         }
 
-        /* Vault Cards */
+        /* VAULT CARDS (Teri purani styling) */
         .report-card {
-            background: white;
+            background:white;
             border-radius: 16px;
             border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
-            overflow: hidden;
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .report-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.08);
-            border-color: #bfdbfe;
-        }
-
-        .card-header-custom {
-            padding: 15px 20px;
-            background: #f8fafc;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-body-custom {
-            padding: 20px;
-            flex-grow: 1;
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.12);
+            border-color: #6ee7b7;
         }
 
         .status-badge {
@@ -88,7 +108,6 @@
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .status-analyzed {
@@ -96,210 +115,185 @@
             color: #166534;
         }
 
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .btn-action {
-            font-size: 0.85rem;
-            font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 8px;
-            transition: 0.2s;
-            width: 100%;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-view {
-            background: #eff6ff;
-            color: #2563eb;
-            border: 1px solid #bfdbfe;
-        }
-
-        .btn-view:hover {
-            background: #2563eb;
-            color: white;
-        }
-
-        /* Search Bar */
-        .search-box {
-            position: relative;
-            max-width: 300px;
-        }
-
-        .search-box input {
-            padding-left: 35px;
-            border-radius: 50px;
-            border: 1px solid #cbd5e1;
-        }
-
-        .search-box i {
+        .dots-menu {
             position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
         }
 
-        .report-card { position: relative; }
-.dots-menu {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    z-index: 10;
-}
-.dropdown-toggle::after { display: none; } /* Arrow hatane ke liye */
+        .dropdown-toggle::after {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-custom sticky-top">
-        <div class="container">
-            <a class="brand-logo" href="{% url 'dashboard' %}"><i class="fa-solid fa-shield-heart"></i> InsightVault</a>
+    <div class="sidebar">
+        <div class="sidebar-title border-bottom pb-3">
+            <i class="fa-solid fa-shield-heart"></i> InsightVault
+        </div>
+
+        <div class="text-muted small fw-bold mb-2 ps-3 mt-3">CATEGORIES</div>
+
+        <button class="nav-btn active" onclick="filterReports('all', this)">
+            <span><i class="fas fa-border-all me-2"></i> All Reports</span>
+        </button>
+
+        {% for category in categories %}
+        <button class="nav-btn" onclick="filterReports('{{ category }}', this)">
+            <span><i class="fas fa-file-medical me-2"></i> {{ category }}</span>
+        </button>
+        {% endfor %}
+
+        <button class="nav-btn mt-2" style="border-top: 1px solid #eee; border-radius: 0 0 8px 8px;"
+            onclick="filterReports('unextracted', this)">
+            <span><i class="fas fa-exclamation-circle me-2 text-warning"></i> Unextracted</span>
+        </button>
+    </div>
+
+    <div class="main-content">
+
+        <div class="page-header">
+            <div>
+                <h2 class="fw-bold mb-1">Vault</h2>
+                <p class="text-muted mb-0">Securely browse and manage your digitized health reports.</p>
+            </div>
             <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'dashboard' %}"
-                    class="text-decoration-none text-muted fw-medium d-none d-md-block me-3">&larr; Back to
-                    Dashboard</a>
+                <a href="{% url 'upload_report' %}" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm" style="background: #10b981;">
+                    <i class="fa-solid fa-plus me-1"></i> Upload New
+                </a>
                 <div class="dropdown">
-                    <a class="text-decoration-none text-dark d-flex align-items-center gap-2 dropdown-toggle" href="#"
+                    <a class="text-decoration-none text-dark fw-bold dropdown-toggle" href="#"
                         data-bs-toggle="dropdown">
-                        <span class="fw-medium d-none d-sm-block">{{ request.user.first_name }}</span>
-                        <div class="profile-icon">{{ request.user.first_name|first|upper }}</div>
+                        <div
+                            style="background: #10b981; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                            {{ request.user.first_name|first|upper }}
+                        </div>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                        <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">🚪 Sign Out</a>
-                        </li>
+                        <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">Sign Out</a></li>
                     </ul>
                 </div>
             </div>
         </div>
-    </nav>
 
-    <div class="container page-header flex-wrap gap-3">
-        <div>
-            <h2 class="fw-bold mb-1">My Vault 🗄️</h2>
-            <p class="text-muted mb-0">Securely browse and manage your digitized health reports.</p>
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div class="d-flex gap-2">
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" class="form-control" placeholder="Search reports...">
+        {% endfor %}
+        {% endif %}
+
+        <div class="row" id="reports-container">
+            {% if reports %}
+            {% for record in reports %}
+
+            <div class="col-md-4 mb-4 report-wrapper"
+                data-category="{% if record.status == 'failed' %}unextracted{% elif record.parsed_data.Standard_Category %}{{ record.parsed_data.Standard_Category }}{% else %}unknown{% endif %}">
+
+                <div class="card shadow-sm border-0 rounded-4 h-100 report-card">
+                    <div class="dropdown dots-menu">
+                        <button class="btn btn-link text-muted dropdown-toggle p-0" type="button"
+                            data-bs-toggle="dropdown"><span
+                                style="font-size: 1.5rem; line-height: 1;">&#8942;</span></button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2">
+                            <li><a class="dropdown-item text-danger fw-medium rounded-2"
+                                    href="{% url 'delete_report' record.id %}"
+                                    onclick="return confirm('Delete this report?');">🗑️ Delete Report</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body text-center p-4 d-flex flex-column">
+                        <div class="display-4 mb-2">📄</div>
+                        <h5 class="fw-bold text-dark">
+                            {% if record.parsed_data %} {{ record.parsed_data.Report_Type }} {% else %} Medical Report
+                            {% endif %}
+                        </h5>
+
+                        <div class="mb-2">
+                            {% if record.status == 'success' %}
+                            <span class="status-badge status-analyzed">✨ Analyzed</span>
+                            {% elif record.status == 'failed' %}
+                            <span class="status-badge" style="background: #fee2e2; color: #991b1b;">⚠️ Failed</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-muted small">Uploaded on: {{ record.uploaded_at|date:"d M Y" }}</p>
+
+                        {% if record.status == 'success' and record.parsed_data.Data %}
+                        <div class="text-start bg-light rounded-3 p-2 mb-3 shadow-sm flex-grow-1"
+                            style="max-height: 160px; overflow-y: auto;">
+                            <ul class="list-unstyled mb-0">
+                                {% for test_name, test_value in record.parsed_data.Data.items %}
+                                <li class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
+                                    <span class="text-secondary small fw-medium" style="font-size: 0.85rem;">{{ test_name }}</span>
+                                    <span class="badge rounded-pill" style="background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0;">
+                                        {{ test_value }}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% elif record.status == 'failed' %}
+                        <div
+                            class="text-center bg-light border border-warning rounded-3 p-3 mb-3 flex-grow-1 d-flex flex-column justify-content-center">
+                            <span style="font-size: 24px;">⚠️</span>
+                            <p class="text-dark small fw-bold mb-0">AI Extraction Failed</p>
+                            <p class="text-muted" style="font-size: 0.75rem;">Server busy, Report Saved.</p>
+                        </div>
+                        {% endif %}
+
+                        <a href="{{ record.report_image.url }}" target="_blank" class="btn btn-outline-success rounded-pill w-100 mt-auto"
+                            style="border-color: #10b981; color: #10b981; font-weight: 600;">
+                            <i class="fas fa-external-link-alt me-1"></i> View Original
+                        </a>
+                    </div>
+                </div>
             </div>
-            <a href="{% url 'upload_report' %}" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm"><i
-                    class="fa-solid fa-plus me-1"></i> Upload New</a>
-        </div>
-    </div>
-
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-<div class="row">
-    {% if reports %}
-
-{% for record in reports %}
-<div class="col-md-4 mb-4">
-    <div class="card shadow-sm border-0 rounded-4 h-100 report-card">
-
-        <div class="dropdown dots-menu">
-            <button class="btn btn-link text-muted dropdown-toggle p-0" type="button" data-bs-toggle="dropdown">
-                <span style="font-size: 1.5rem; line-height: 1;">&#8942;</span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2">
-                <li>
-                    <a class="dropdown-item text-danger fw-medium rounded-2" href="{% url 'delete_report' record.id %}"
-                        onclick="return confirm('Are you sure you want to delete this report?');">
-                        🗑️ Delete Report
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <div class="card-body text-center p-4 d-flex flex-column">
-            <div class="display-4 mb-2">📄</div>
-
-            <h5 class="fw-bold text-dark">
-                {% if record.parsed_data %}
-                {{ record.parsed_data.Report_Type }}
-                {% else %}
-                Medical Report
-                {% endif %}
-            </h5>
-            <div class="mb-2">
-                {% if record.status == 'success' %}
-                <span class="status-badge status-analyzed">✨ Analyzed</span>
-                {% elif record.status == 'failed' %}
-                <span class="status-badge" style="background: #fee2e2; color: #991b1b;">⚠️ Failed</span>
-                {% endif %}
-            </div>
-            
-            <p class="text-muted small">Uploaded on: {{ record.uploaded_at|date:"d M Y" }}</p>
-
-            {% if record.status == 'success' and record.parsed_data.Data %}
-            <div class="text-start bg-light rounded-3 p-2 mb-3 shadow-sm flex-grow-1" style="max-height: 160px; overflow-y: auto;">
-                <ul class="list-unstyled mb-0">
-                    {% for test_name, test_value in record.parsed_data.Data.items %}
-                    <li class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-1">
-                        <span class="text-secondary small fw-medium" style="font-size: 0.85rem;">{{ test_name }}</span>
-                        <span class="badge rounded-pill" style="background-color: #e0e7ff; color: #3730a3;">{{ test_value }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-            
-            {% elif record.status == 'failed' %}
-            <div
-                class="text-center bg-light border border-warning rounded-3 p-3 mb-3 flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-                <span style="font-size: 24px; margin-bottom: 5px;">⚠️</span>
-                <p class="text-dark small fw-bold mb-0">AI Extraction Failed</p>
-                <p class="text-muted" style="font-size: 0.75rem; margin-top: 5px;">Server busy,Report Saved,Please view the
-                    original.</p>
-            </div>
-            
+            {% endfor %}
             {% else %}
-            <div
-                class="text-center bg-light rounded-3 p-3 mb-3 flex-grow-1 d-flex flex-column align-items-center justify-content-center">
-                <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
-                <p class="text-muted small mb-0">Processing Report...</p>
+            <div class="col-12 text-center py-5">
+                <div class="display-1 text-muted mb-3">📭</div>
+                <h4 class="text-muted">Your vault is empty.</h4>
+                <a href="{% url 'upload_report' %}" class="btn text-white rounded-pill px-4 mt-3 fw-bold"
+                    style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                    <i class="fas fa-cloud-upload-alt me-2"></i> Upload Your First Report
+                </a>
             </div>
             {% endif %}
-            
-            
-           
-            <a href="{{ record.report_image.url }}" target="_blank"
-                class="btn btn-outline-primary rounded-pill w-100 mt-auto"
-                style="border-color: #8B5CF6; color: #8B5CF6;">
-                👁️ View Original
-            </a>
         </div>
     </div>
-</div>
-{% endfor %}
-
-    {% else %}
-    <div class="col-12 text-center py-5">
-        <div class="display-1 text-muted mb-3">📭</div>
-        <h4 class="text-muted">Your vault is empty.</h4>
-        <p class="text-muted">You haven't uploaded any reports yet.</p>
-        <a href="{% url 'upload_report' %}" class="btn text-white rounded-pill px-4 mt-2"
-            style="background: linear-gradient(135deg, #8B5CF6, #EC4899);">
-            Upload Your First Report
-        </a>
-    </div>
-    {% endif %}
-
-    
-</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function filterReports(category, clickedElement) {
+            // 1. Sidebar ke saare buttons se 'active' class hatao aur clicked wale par lagao
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            clickedElement.classList.add('active');
+
+            // 2. Saari reports ke div pakdo
+            const reports = document.querySelectorAll('.report-wrapper');
+
+            // 3. Loop chalao: Match hua toh dikhao (block), nahi toh chupao (none)
+            reports.forEach(report => {
+                const reportCategory = report.getAttribute('data-category');
+
+                if (category === 'all') {
+                    report.style.display = 'block'; // Sab dikhao
+                } else if (reportCategory === category) {
+                    report.style.display = 'block'; // Match dikhao
+                } else {
+                    report.style.display = 'none'; // Baaki chupao
+                }
+            });
+        }
+    </script>
+
 </body>
 
 </html>

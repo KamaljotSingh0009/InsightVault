@@ -14,3 +14,5 @@ myenv/
 # Python Cache
 __pycache__/
 *.pyc
+
+*.joblib

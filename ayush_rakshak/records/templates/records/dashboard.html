@@ -12,13 +12,18 @@
     <style>
         body {
             font-family: 'DM Sans', sans-serif;
-            background-color: #f8fafc;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #d1fae5 100%);
             color: #0f172a;
+            background-attachment: fixed; 
+            background-size: cover;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
         }
 
         /* Navbar */
         .navbar-custom {
-            background: white;
+            background: rgba(255, 255, 255, 0.782);
             border-bottom: 1px solid #e2e8f0;
             padding: 12px 0;
         }
@@ -26,12 +31,12 @@
         .brand-logo {
             font-size: 1.4rem;
             font-weight: 700;
-            color: #2563eb;
+            color: #10b981;
             text-decoration: none;
         }
 
         .profile-icon {
-            background: linear-gradient(135deg, #2563eb, #60a5fa);
+            background: linear-gradient(135deg, #059669, #10b981);;
             color: white;
             width: 38px;
             height: 38px;
@@ -81,8 +86,8 @@
 
         .feature-box:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.08);
-            border-color: #bfdbfe;
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15); /* Blue shadow se Emerald shadow */
+            border-color: #6ee7b7;
             color: inherit;
         }
 
@@ -102,25 +107,38 @@
             transform: scale(1.1);
         }
 
-        /* Custom Icon Colors */
+        
         .upload-icon {
-            background: #dbeafe;
-            color: #2563eb;
+            background: #d1fae5; /* Light Mint */
+            color: #059669; /* Dark Emerald */
         }
 
         .vault-icon {
-            background: #e0e7ff;
-            color: #4f46e5;
+            background: #fdc8fd; /* Light Teal */
+            color: #aa27df; /* Dark Teal */
         }
 
         .risk-icon {
-            background: #fee2e2;
-            color: #ef4444;
+           background: #fee2e2; /* Ise Red hi rakhenge alert ke liye */
+            color: #ef4444; /* Dark Red */
         }
 
         .diet-icon {
             background: #dcfce7;
             color: #10b981;
+        }
+
+        /* Sidebar Panel UI */
+        .offcanvas-end {
+            width: 400px;
+            border-left: none;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+        }
+        /* Magic Blur Effect on Background */
+        .offcanvas-backdrop.show {
+            opacity: 0.5;
+            backdrop-filter: blur(5px);
+            background-color: rgba(15, 23, 42, 0.6);
         }
     </style>
 </head>
@@ -140,11 +158,13 @@
                     <li>
                         <h6 class="dropdown-header">Account Options</h6>
                     </li>
-                    <li><a class="dropdown-item fw-medium" href="#">👤 Edit Profile</a></li>
+                    <li><a class="dropdown-item" href="{% url 'edit_profile' %}" data-bs-toggle="offcanvas" data-bs-target="#editProfilePanel">
+                        <i class="fas fa-user-edit me-2 text-success"></i> Edit Profile
+                    </a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">🚪 Sign Out</a></li>
+                    <li><a class="dropdown-item text-danger fw-medium" href="{% url 'logout' %}">Log Out</a></li>
                 </ul>
             </div>
         </div>
@@ -159,32 +179,33 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="stat-card d-flex align-items-center gap-3">
-                    <div class="stat-icon" style="color: #2563eb;"><i class="fa-solid fa-file-waveform"></i></div>
+                    <div class="stat-icon" style="color: #0e8d62;"><i class="fa-solid fa-file-waveform"></i></div>
                     <div>
-                        <h3 class="mb-0 fw-bold">0</h3>
+                        <h3 class="mb-0 fw-bold">{{ total_reports }}</h3>
                         <span class="text-muted small fw-medium text-uppercase">Total Reports</span>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="stat-card d-flex align-items-center gap-3">
-                    <div class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <div  class="stat-icon" style="color: #10b981;"><i class="fa-solid fa-heart-pulse"></i></div>
                     <div>
-                        <h3 class="mb-0 fw-bold">Good</h3>
-                        <span class="text-muted small fw-medium text-uppercase">Latest Health Status</span>
+                        <a href="{% url 'my_prescriptions' %}" class="text-decoration-none text-dark d-block">
+                        <h3 class="mb-0 fw-bold">Prescriptions</h3>
+                        <span class="text-muted small fw-medium text-uppercase">Medicinal Records</span>
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card d-flex align-items-center gap-3">
+            <div class="col-md-4" id="customModalBtn">
+                <div class="stat-card d-flex align-items-center gap-3 " style="cursor: pointer;">
                     <div class="stat-icon" style="color: #f59e0b;"><i class="fa-solid fa-calendar-check"></i></div>
                     <div>
-                        <h3 class="mb-0 fw-bold">Pending</h3>
-                        <span class="text-muted small fw-medium text-uppercase">Diet Plan Update</span>
+                        <h3 class="mb-0 fw-bold">Track Diet/Habbits</h3>
+                        <span class="text-muted small fw-medium text-uppercase">Performance Update</span>
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="container mb-5">
@@ -207,24 +228,373 @@
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <a href="#" class="feature-box">
+                <a href="{% url 'risk_analysis' %}" class="feature-box">
                     <div class="icon-wrapper risk-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <h5 class="fw-bold">Risk Analysis</h5>
-                    <p class="text-muted small mb-0">Check AI predictions and highlighted anomalies.</p>
+                    <h5 class="fw-bold">Disease Prediction</h5>
+                    <p class="text-muted small mb-0">Check predictions for your Heart health and Diabetes.</p>
                 </a>
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <a href="#" class="feature-box">
+                <a href="{% url 'smart_diet' %}" class="feature-box">
                     <div class="icon-wrapper diet-icon"><i class="fa-solid fa-leaf"></i></div>
-                    <h5 class="fw-bold">Smart Diet Plan</h5>
-                    <p class="text-muted small mb-0">Get AI-generated meal plans tailored for you.</p>
+                    <h5 class="fw-bold">Food Recommendations</h5>
+                    <p class="text-muted small mb-0">Get AI-generated recommended food based on your health profile.</p>
                 </a>
             </div>
         </div>
     </div>
 
+    
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="editProfilePanel" aria-labelledby="editProfileLabel">
+        <div class="offcanvas-header border-bottom bg-light">
+            <h5 class="fw-bold mb-0 text-dark" id="editProfileLabel">
+                <i class="fas fa-sliders-h text-success me-2"></i> Profile Settings
+            </h5>
+            <button type="button" class="btn-close shadow-none" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+    
+        <div class="offcanvas-body p-4">
+            <form action="{% url 'edit_profile' %}" method="POST">
+                {% csrf_token %}
+    
+                <p class="text-muted small fw-bold text-uppercase mb-3">Basic Info</p>
+    
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <label class="form-label text-muted small">First Name</label>
+                        <input type="text" name="first_name" class="form-control rounded-3"
+                            value="{{ request.user.first_name }}" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label text-muted small">Last Name</label>
+                        <input type="text" name="last_name" class="form-control rounded-3"
+                            value="{{ request.user.last_name }}" required>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <label class="form-label text-muted small">Email Address (Cannot be changed)</label>
+                        <input type="email" name="email" class="form-control rounded-3 bg-light text-muted" value="{{ request.user.email }}"
+                            readonly>
+                    </div>
+                </div>
+    
+                <p class="text-muted small fw-bold text-uppercase mb-3">Personal Details</p>
+    
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label text-muted small">Phone Number</label>
+                        <input type="text" name="phone" class="form-control rounded-3" value="{{ profile.phone }}" required>
+                    </div>
+                    <div class="col-6 mt-3">
+                        <label class="form-label text-muted small">Age</label>
+                        <input type="number" name="age" class="form-control rounded-3" value="{{ profile.age }}" required>
+                    </div>
+                    <div class="col-6 mt-3">
+                        <label class="form-label text-muted small">Nationality</label>
+                        <input type="text" name="nationality" class="form-control rounded-3"
+                            value="{{ profile.nationality }}" required>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <div class="p-3 bg-success bg-opacity-10 rounded-3 border border-success border-opacity-25">
+                            <label class="form-label text-success small fw-bold text-uppercase"><i
+                                    class="fa-solid fa-house-medical me-1"></i> Current Clinic / Doctor</label>
+                            <select name="assigned_doctor" class="form-select border-success-subtle rounded-3 bg-white">
+                            
+                                <!-- Ye naya smart option hai. 'value="none"' jayega backend ko -->
+                                <option value="none" {% if not profile.assigned_doctor %}selected{% endif %}>
+                                    -- I am an Individual (No Clinic) --
+                                </option>
+                            
+                                {% for doc in all_doctors %}
+                                <option value="{{ doc.id }}" {% if profile.assigned_doctor.id == doc.id %} selected {% endif %}>
+                                    Dr. {{ doc.first_name }} {{ doc.last_name }} (Clinic ID: {{ doc.username }})
+                                </option>
+                                {% endfor %}
+                            
+                            </select>
+                            <div class="form-text small mt-2 opacity-75">
+                                <i class="fa-solid fa-shield-halved text-success"></i> Changing your clinic securely routes your new
+                                reports. Past history remains 100% safe.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="d-grid mt-5">
+                    <button type="submit" class="btn btn-success py-2 fw-bold rounded-pill shadow-sm">
+                        <i class="fas fa-check-circle me-2"></i> Save Changes
+                    </button>
+                </div>
+
+            </form>
+            <hr class="my-5 opacity-25">
+            <p class="text-danger small fw-bold text-uppercase mb-3">
+                <i class="fas fa-lock me-1"></i> Security Settings
+            </p>
+            
+            <form action="{% url 'change_password' %}" method="POST" class="bg-light p-3 rounded-4 border">
+                {% csrf_token %}
+            
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">Old Password</label>
+                    <input type="password" name="old_password" class="form-control rounded-3 border-secondary-subtle" required
+                        placeholder="Enter current password">
+                </div>
+            
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">New Password</label>
+                    <input type="password" name="new_password" class="form-control rounded-3 border-secondary-subtle" required
+                        placeholder="Create new password">
+                </div>
+            
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-medium">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="form-control rounded-3 border-secondary-subtle" required
+                        placeholder="Confirm new password">
+                </div>
+            
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-outline-danger py-2 fw-bold rounded-pill">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+    <div class="modal fade" id="dietPlanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen p-4">
+            <div class="modal-content rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title fw-bold">Habit Tracker</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+    
+                    <div class="mb-4 w-25">
+                        <input type="text" id="newHabitInput" class="form-control form-control-lg rounded-3 shadow-sm"
+                            placeholder="Type a habit and press Enter...">
+                    </div>
+    
+                    <div class="table-responsive border rounded-3 shadow-sm mb-5">
+                        <table class="table table-hover table-bordered text-center align-middle mb-0"
+                            style="white-space: nowrap;">
+                            <thead class="table-light">
+                                <tr id="tableHeaderRow">
+                                    <th class="text-start px-3">Habit Name</th>
+                                    <th>Goal</th>
+                                    <th>Done</th>
+                                    <th>Left</th>
+                                    <th>Progress %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="habitTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 rounded-4">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-4">Top Performance</h5>
+                                    <div id="topPerformanceList">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            let customBtn = document.getElementById('customModalBtn');
+            let modal = document.getElementById('dietPlanModal');
+            let closeBtn = document.querySelector('#dietPlanModal .btn-close');
+
+            if (customBtn) {
+                customBtn.addEventListener('click', function () {
+                    modal.style.display = 'block';
+                    setTimeout(() => {
+                        modal.classList.add('show');
+                        modal.style.backgroundColor = 'rgba(15, 23, 42, 0.6)';
+                    }, 10);
+                    document.body.style.overflow = 'hidden';
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function () {
+                    modal.classList.remove('show');
+                    modal.style.backgroundColor = '';
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 150);
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            const date = new Date();
+            const currentDay = date.getDate();
+            const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+
+            let headerRow = document.getElementById('tableHeaderRow');
+            let thHtml = '<th class="text-start px-3">Habit Name</th><th>Goal</th>';
+            for (let i = 1; i <= daysInMonth; i++) {
+                thHtml += `<th>${i}</th>`;
+            }
+            thHtml += '<th>Done</th><th>Left</th><th>Progress %</th>';
+            headerRow.innerHTML = thHtml;
+
+            let habitsRaw = '{{ user_habits|escapejs }}';
+            let habits = [];
+            if (habitsRaw && habitsRaw !== '[]' && habitsRaw !== '') {
+                try {
+                    habits = JSON.parse(habitsRaw);
+                } catch (e) {
+                    habits = [];
+                }
+            }
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+
+            const csrftoken = getCookie('csrftoken');
+
+            function saveToDatabase() {
+                fetch('/save-habits/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(habits)
+                }).then(response => {
+                    if (!response.ok) {
+                        console.error("Habit save fail ho gayi backend pe!");
+                    }
+                });
+            }
+
+            function renderAll() {
+                let tableBody = document.getElementById('habitTableBody');
+                tableBody.innerHTML = '';
+
+                habits.forEach(habit => {
+                    let doneCount = habit.ticks.filter(Boolean).length;
+                    let leftCount = daysInMonth - doneCount;
+                    let prog = Math.round((doneCount / daysInMonth) * 100);
+                    habit.progress = prog;
+
+                    let tr = document.createElement('tr');
+                    let tds = `<td class="text-start px-3 fw-medium">
+                                   <div class="d-flex justify-content-between align-items-center">
+                                       <span>${habit.name}</span>
+                                       <i class="fa-solid fa-trash-can text-danger delete-habit" style="cursor: pointer; font-size: 0.9rem;" data-id="${habit.id}"></i>
+                                   </div>
+                               </td>
+                               <td class="align-middle">${daysInMonth}</td>`;
+
+                    for (let i = 0; i < daysInMonth; i++) {
+                        let disabledAttr = ((i + 1) < currentDay) ? "disabled" : "";
+                        let checked = habit.ticks[i] ? 'checked' : '';
+                        tds += `<td class="align-middle"><input type="checkbox" class="form-check-input border-secondary habit-checkbox" data-id="${habit.id}" data-day="${i}" ${checked} ${disabledAttr}></td>`;
+                    }
+
+                    tds += `<td class="fw-bold text-success align-middle">${doneCount}</td>
+                            <td class="fw-bold text-danger align-middle">${leftCount}</td>
+                            <td class="fw-bold text-primary align-middle">${prog}%</td>`;
+
+                    tr.innerHTML = tds;
+                    tableBody.appendChild(tr);
+                });
+
+                let sortedHabits = [...habits].sort((a, b) => b.progress - a.progress);
+                let perfList = document.getElementById('topPerformanceList');
+                perfList.innerHTML = '';
+
+                sortedHabits.forEach(habit => {
+                    let perfDiv = document.createElement('div');
+                    perfDiv.className = 'mb-4';
+                    perfDiv.innerHTML = `
+                        <div class="d-flex justify-content-between small fw-bold mb-2">
+                            <span class="text-muted">${habit.name}</span>
+                            <span class="text-dark">${habit.progress}%</span>
+                        </div>
+                        <div class="progress" style="height: 10px; border-radius: 10px;">
+                            <div class="progress-bar bg-success" style="width: ${habit.progress}%; border-radius: 10px;"></div>
+                        </div>
+                    `;
+                    perfList.appendChild(perfDiv);
+                });
+
+                saveToDatabase();
+            }
+
+            document.getElementById('newHabitInput').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                    let newHabit = {
+                        id: Date.now().toString(),
+                        name: this.value.trim(),
+                        ticks: new Array(daysInMonth).fill(false),
+                        progress: 0
+                    };
+                    habits.push(newHabit);
+                    this.value = '';
+                    renderAll();
+                }
+            });
+
+            document.getElementById('habitTableBody').addEventListener('change', function (e) {
+                if (e.target.classList.contains('habit-checkbox')) {
+                    let id = e.target.getAttribute('data-id');
+                    let day = parseInt(e.target.getAttribute('data-day'));
+                    let habit = habits.find(h => h.id === id);
+                    if (habit) {
+                        habit.ticks[day] = e.target.checked;
+                        renderAll();
+                    }
+                }
+            });
+
+            document.getElementById('habitTableBody').addEventListener('click', function (e) {
+                if (e.target.classList.contains('delete-habit')) {
+                    let id = e.target.getAttribute('data-id');
+                    habits = habits.filter(h => h.id !== id);
+                    renderAll();
+                }
+            });
+
+            renderAll();
+        });
+
+        {% if messages %}
+            // Ye code jaise hi page load hoga, browser ka prompt chala dega
+                {% for message in messages %}
+                alert("{{ message|escapejs}}");
+                {% endfor %}
+        
+        {% endif %}
+    </script>
 </body>
+
 
 </html>

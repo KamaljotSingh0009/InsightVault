@@ -1,0 +1,640 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Patient File - {{ patient_profile.user.first_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #065f46, #10b981);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+        }
+
+        .btn-submit {
+            background: #10b981;
+            color: white;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 12px 20px;
+            width: 100%;
+            border: none;
+            transition: 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        /* TABS STYLING */
+        .nav-pills .nav-link {
+            color: #64748b;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 10px 20px;
+            transition: 0.3s;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #10b981;
+            color: white;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* TIMELINE STYLING (For Prescriptions) */
+        .timeline {
+            border-left: 2px solid #e2e8f0;
+            margin-left: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .timeline-item {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px #10b981;
+        }
+
+        /* SCROLL BOX */
+        .scroll-box {
+            height: calc(100vh - 220px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 10px;
+        }
+
+        .scroll-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .scroll-box::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .scroll-box::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-bar d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-sm btn-light fw-bold text-success me-3">&larr; Back to
+                Dashboard</a>
+            <span class="fs-4 fw-bold">{{ patient_profile.user.first_name }} {{ patient_profile.user.last_name }}'s
+                File</span>     
+        </div>
+        <button type="button" class="btn btn-light shadow-sm" data-bs-toggle="modal" data-bs-target="#analyticsModal">
+            📊 View Patient Analytics
+        </button>
+        <div class="text-end">
+            <small class="d-block text-white-50">Patient ID: {{ patient_profile.patient_id }}</small>
+            <span class="badge bg-light text-success">Age: {{ patient_profile.age|default:"N/A" }} | Phone:
+                {{patient_profile.phone|default:"N/A" }}</span>
+        </div>
+    </div>
+
+    <div class="container-fluid px-4">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+
+            <div class="col-lg-5">
+                <div class="card-left-container p-3"
+                    style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: calc(100vh - 120px);">
+
+                    <ul class="nav nav-pills nav-fill mb-3" id="historyTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#reports-tab"
+                                type="button">📄 Lab Reports</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#rx-tab" type="button">📜
+                                Past Prescriptions</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="historyTabsContent">
+
+                        <div class="tab-pane fade show active" id="reports-tab" role="tabpanel">
+                            <div class="input-group mb-3 shadow-sm rounded">
+                                <span class="input-group-text bg-white border-end-0 text-success"><i
+                                        class="fa-solid fa-search">🔍</i></span>
+                                <input type="text" id="reportSearch" class="form-control border-start-0 ps-0"
+                                    placeholder="Search by date, type or keyword..." onkeyup="filterReports()">
+                            </div>
+
+                            <div class="scroll-box">
+                                {% for report in patient_reports %}
+                                <div
+                                    class="report-item p-3 mb-2 bg-light rounded border border-success border-opacity-25 d-flex justify-content-between align-items-center transition-all hover-shadow">
+                                    <div>
+                                        <span class="d-block fw-bold text-dark">{{ report.uploaded_at|date:"d M Y"}}</span>
+                                        <small class="text-muted">Medical Report</small>
+                                    </div>
+                                    {% if report.report_image %}
+                                    <a href="{{ report.report_image.url }}" target="_blank"
+                                        class="btn btn-sm btn-success rounded-pill px-3">View</a>
+                                    {% else %}
+                                    <span class="badge bg-white text-danger border border-danger">No Image</span>
+                                    {% endif %}
+                                </div>
+                                {% empty %}
+                                <div class="text-center mt-5 opacity-50">
+                                    <h2>📁</h2>
+                                    <p>No reports found.</p>
+                                </div>
+                                {% endfor %}
+
+                                {% if patient_reports.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination justify-content-center pagination-sm">
+                                        <li
+                                            class="page-item {% if not patient_reports.has_previous %}disabled{% endif %}">
+                                            <a class="page-link text-success"
+                                                href="?rep_page=1&tab=reports-tab">First</a>
+                                        </li>
+                                        {% for num in patient_reports.paginator.page_range %}
+                                        {% if patient_reports.number == num %}
+                                        <li class="page-item active"><span
+                                                class="page-link bg-success border-success">{{ num }}</span></li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link text-success"
+                                                href="?rep_page={{ num }}&tab=reports-tab">{{ num }}</a></li>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <li class="page-item {% if not patient_reports.has_next %}disabled{% endif %}">
+                                            <a class="page-link text-success"
+                                                href="?rep_page={{ patient_reports.paginator.num_pages }}&tab=reports-tab">Last</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                <p class="text-center text-muted small mt-2">Showing Page {{ patient_reports.number }}
+                                    of {{ patient_reports.paginator.num_pages }}</p>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="rx-tab" role="tabpanel">
+                            <div class="scroll-box p-2">
+                                <div class="timeline">
+                                    {% for p in past_prescriptions %}
+                                    <div class="timeline-item bg-white p-3 rounded border shadow-sm">
+                                        <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                                            <span class="text-success fw-bold">{{ p.created_at|date:"d M Y" }}</span>
+                                            <span class="badge bg-light text-secondary border">Dr.
+                                                {{p.doctor.first_name}} {{p.doctor.last_name}}</span>
+                                        </div>
+
+                                        {% if p.diagnosis_or_symptoms %}
+                                        <p class="mb-1"><strong class="small text-muted">Diagnosis/Symptoms:</strong>
+                                            <br> <span class="fw-medium">{{ p.diagnosis_or_symptoms }}</span>
+                                        </p>
+                                        {% endif %}
+
+                                        <div class="p-2 bg-light rounded mt-2">
+                                            <strong class="small text-muted">Prescription:</strong><br>
+                                            <span style="white-space: pre-wrap; font-family: monospace;">{{ p.medicines}}</span>
+                                        </div>
+                                        {% if p.notes %}
+                                        <div class="mt-2 p-2 border-start border-3 border-warning bg-warning bg-opacity-10 rounded">
+                                            <strong class="small text-warning-emphasis"><i class="fa-solid fa-circle-info me-1"></i>Advice / Notes:</strong><br>
+                                            <span class="small text-dark">{{ p.notes }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    {% empty %}
+                                    <div class="text-center mt-5 opacity-50">
+                                        <h2>📜</h2>
+                                        <p>No past prescriptions.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                {% if past_prescriptions.has_other_pages %}
+                                <nav class="mt-4">
+                                    <ul class="pagination justify-content-center pagination-sm">
+                                        <li
+                                            class="page-item {% if not past_prescriptions.has_previous %}disabled{% endif %}">
+                                            <a class="page-link text-success" href="?pres_page=1&tab=rx-tab">First</a>
+                                        </li>
+                                        {% for num in past_prescriptions.paginator.page_range %}
+                                        {% if past_prescriptions.number == num %}
+                                        <li class="page-item active"><span
+                                                class="page-link bg-success border-success">{{ num }}</span></li>
+                                        {% else %}
+                                        <li class="page-item"><a class="page-link text-success"
+                                                href="?pres_page={{ num }}&tab=rx-tab">{{ num }}</a></li>
+                                        {% endif %}
+                                        {% endfor %}
+                                        <li
+                                            class="page-item {% if not past_prescriptions.has_next %}disabled{% endif %}">
+                                            <a class="page-link text-success"
+                                                href="?pres_page={{ past_prescriptions.paginator.num_pages }}&tab=rx-tab">Last</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                <p class="text-center text-muted small mt-2">Showing Page {{ past_prescriptions.number}} of {{ past_prescriptions.paginator.num_pages }}</p>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7">
+                <div class="card-form p-4 border border-success border-opacity-25"
+                    style="background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                        <h5 class="fw-bold m-0" style="color: #065f46;"> Digital Prescription Pad</h5>
+                        <span class="text-muted small">"{{ patient_profile.user.first_name }} {{ patient_profile.patient_id }}" </span>
+                    </div>
+
+                    <form method="POST" action="">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted fw-bold small">SYMPTOMS Observed</label>
+                                <input type="text" class="form-control bg-light" name="symptoms"
+                                    placeholder="e.g. Cough, Fever, Body ache">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted fw-bold small">DIAGNOSIS</label>
+                                <input type="text" class="form-control bg-light" name="diagnosis"
+                                    placeholder="e.g. Viral Infection">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-muted fw-bold small">MEDICINES & DOSAGE <span
+                                    class="text-danger">*</span></label>
+
+                            <div id="medicineRowsContainer">
+                                <div class="medicine-row bg-light p-2 rounded mb-2 border">
+                                    <div class="row g-2">
+                                        <div class="col-md-5">
+                                            <input type="text" class="form-control form-control-sm med-name"
+                                                list="commonMeds" placeholder="Type medicine name..." required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select form-select-sm med-dosage" required>
+                                                <option value="">Dosage...</option>
+                                                <option value="1-0-1">1-0-1 (Morning-Night)</option>
+                                                <option value="1-1-1">1-1-1 (3 Times)</option>
+                                                <option value="1-0-0">1-0-0 (Morning)</option>
+                                                <option value="0-0-1">0-0-1 (Night)</option>
+                                                <option value="SOS">SOS (When required)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="text" class="form-control form-control-sm med-days"
+                                                placeholder="Days (e.g. 5)" required>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <select class="form-select form-select-sm med-timing">
+                                                <option value="AF">After Food</option>
+                                                <option value="BF">Before Food</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-sm btn-outline-success mt-1"
+                                onclick="addMedicineRow()">
+                                Add Another Medicine
+                            </button>
+
+                            <textarea name="medicines" id="hiddenMedicinesInput" style="display:none;"></textarea>
+
+                            <datalist id="commonMeds">
+                                <option value="Tab. Paracetamol 500mg">
+                                <option value="Tab. Azithromycin 250mg">
+                                <option value="Tab. Pantoprazole 40mg">
+                                <option value="Syr. Benadryl">
+                                <option value="Tab. Cetirizine 10mg">
+                                <option value="Cap. Amoxicillin 500mg">
+                            </datalist>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label text-muted fw-bold small">ADVICE / NEXT VISIT</label>
+                            <input type="text" class="form-control bg-light" name="notes"
+                                placeholder="e.g. Drink warm water, Review after 5 days">
+                        </div>
+
+                        <button type="submit" class="btn-submit mt-2 fs-5 shadow-sm">💾 Issue Prescription</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="modal fade" id="analyticsModal" tabindex="-1" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="analyticsModalLabel">📈 Patient Health Trends</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+    
+                    <ul class="nav nav-tabs mb-3" id="analyticsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold text-primary" id="sugar-tab" data-bs-toggle="tab"
+                                data-bs-target="#sugar-trend" type="button" role="tab">🩸 Blood Sugar</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-secondary" id="cbc-tab" data-bs-toggle="tab"
+                                data-bs-target="#cbc-trend" type="button" role="tab">🧪 CBC Matrix </button>
+                        </li>
+                    </ul>
+    
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="sugar-trend" role="tabpanel" tabindex="0">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Tracking Fasting/Random Glucose Levels over time.</small>
+                                <span class="badge bg-danger-subtle text-danger border border-danger">Red = High Risk
+                                    (>140)</span>
+                            </div>
+    
+                            {% if sugar_values != '[]' %}
+                            <canvas id="sugarChart" height="120"></canvas>
+                            {% else %}
+                            <div class="alert alert-light text-center border mt-3">No Sugar/Glucose data found in patient
+                                reports.</div>
+                            {% endif %}
+                        </div>
+    
+                    <div class="tab-pane fade" id="cbc-trend" role="tabpanel" tabindex="0">
+                        {% if cbc_dates != '[]' %}
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <h6 class="small fw-bold text-danger mb-1">Hemoglobin (Hb)</h6>
+                                    <div style="position: relative; height: 150px; width: 100%;">
+                                        <canvas id="hbChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <h6 class="small fw-bold text-primary mb-1">WBC Count</h6>
+                                    <div style="position: relative; height: 150px; width: 100%;">
+                                        <canvas id="wbcChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <h6 class="small fw-bold text-success mb-1">RBC Count</h6>
+                                    <div style="position: relative; height: 150px; width: 100%;">
+                                        <canvas id="rbcChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <h6 class="small fw-bold text-warning mb-1">Platelets</h6>
+                                    <div style="position: relative; height: 150px; width: 100%;">
+                                        <canvas id="plateletChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center p-5 text-muted">
+                            <i class="fa-solid fa-flask-vial fs-1 mb-2"></i>
+                            <p>No CBC parameters found in the reports.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+    
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. SEARCH FILTER 
+        function filterReports() {
+            let input = document.getElementById("reportSearch").value.toLowerCase();
+            let reports = document.querySelectorAll(".report-item");
+
+            reports.forEach(function (report) {
+                let textContent = report.textContent.toLowerCase();
+                if (textContent.includes(input)) {
+                    report.classList.remove("d-none");
+                    report.classList.add("d-flex");
+                } else {
+                    report.classList.remove("d-flex");
+                    report.classList.add("d-none");
+                }
+            });
+        }
+
+        // 2. DYNAMIC PRESCRIPTION JS 
+        function addMedicineRow() {
+            const container = document.getElementById('medicineRowsContainer');
+            const rowHTML = `
+            <div class="medicine-row bg-light p-2 rounded mb-2 border position-relative">
+                <button type="button" class="btn-close position-absolute top-0 end-0 m-1" style="font-size: 10px;" onclick="this.parentElement.remove()"></button>
+                <div class="row g-2 mt-1">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control form-control-sm med-name" list="commonMeds" placeholder="Type medicine name..." required>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm med-dosage" required>
+                            <option value="">Dosage...</option>
+                            <option value="1-0-1">1-0-1</option>
+                            <option value="1-1-1">1-1-1</option>
+                            <option value="1-0-0">1-0-0</option>
+                            <option value="0-0-1">0-0-1</option>
+                            <option value="SOS">SOS</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" class="form-control form-control-sm med-days" placeholder="Days" required>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select form-select-sm med-timing">
+                            <option value="AF">After Food</option>
+                            <option value="BF">Before Food</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHTML);
+        }
+
+        // Form Submit hone se theek pehle data compile karna
+        document.querySelector('form').addEventListener('submit', function (e) {
+            let compiledMedicines = "";
+            const rows = document.querySelectorAll('.medicine-row');
+
+            rows.forEach((row, index) => {
+                let name = row.querySelector('.med-name').value;
+                let dosage = row.querySelector('.med-dosage').value;
+                let days = row.querySelector('.med-days').value;
+                let timing = row.querySelector('.med-timing').value;
+                let timingText = (timing === 'AF') ? 'After Food' : 'Before Food';
+
+                compiledMedicines += `${index + 1}. ${name}  =>  [${dosage}] for ${days} Days (${timingText})\n`;
+            });
+            document.getElementById('hiddenMedicinesInput').value = compiledMedicines;
+        });
+
+        // 3. TAB PERSISTENCE JADOO (Reload ke baad wahi tab khulega)
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+
+            if (activeTab) {
+                const tabButton = document.querySelector(`[data-bs-target="#${activeTab}"]`);
+                if (tabButton) {
+                    let tabInstance = new bootstrap.Tab(tabButton);
+                    tabInstance.show();
+                }
+            }
+        });
+
+        const sugarDates = JSON.parse('{{ sugar_dates| safe }}');
+        const sugarValues = JSON.parse('{{ sugar_values| safe }}');
+
+            if (sugarDates && sugarDates.length > 0) {
+                const ctx = document.getElementById('sugarChart').getContext('2d');
+
+                // JADOO: 140 se zyada value hui toh Red (#dc3545), warna Green (#198754)
+                const pointColors = sugarValues.map(val => val > 140 ? '#dc3545' : '#198754');
+                const pointRadius = sugarValues.map(val => val > 140 ? 6 : 4);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: sugarDates,
+                        datasets: [{
+                            label: 'Blood Sugar (mg/dL)',
+                            data: sugarValues,
+                            borderColor: '#adb5bd', // Simple grey line
+                            borderWidth: 2,
+                            pointBackgroundColor: pointColors,
+                            pointBorderColor: pointColors,
+                            pointRadius: pointRadius,
+                            tension: 0.3 // Smooth wave
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: { color: '#f8f9fa' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            const cbcDates = JSON.parse('{{ cbc_dates|safe }}');
+                const hbData = JSON.parse('{{ hb_values|safe }}');
+                const wbcData = JSON.parse('{{ wbc_values|safe }}');
+                const rbcData = JSON.parse('{{ rbc_values|safe }}');
+                const platData = JSON.parse('{{ platelet_values|safe }}');
+
+                if (cbcDates.length > 0) {
+                    // Helper Function: Chhota chart banane ke liye
+                    function createMiniChart(canvasId, label, data, color) {
+                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: cbcDates,
+                                datasets: [{
+                                    label: label,
+                                    data: data,
+                                    borderColor: color,
+                                    backgroundColor: color + '22', // Thoda transparent color
+                                    fill: true,
+                                    tension: 0.3,
+                                    pointRadius: 3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { display: false }, // Chhote chart mein X-axis chhupa dete hain for clean look
+                                    y: { ticks: { font: { size: 10 } } }
+                                }
+                            }
+                        });
+                    }
+
+                    // Chaaro charts create karo
+                    createMiniChart('hbChart', 'Hb', hbData, '#ef4444');      // Red
+                    createMiniChart('wbcChart', 'WBC', wbcData, '#3b82f6');    // Blue
+                    createMiniChart('rbcChart', 'RBC', rbcData, '#10b981');    // Green
+                    createMiniChart('plateletChart', 'Platelets', platData, '#f59e0b'); // Orange
+                }
+    </script>
+</body>
+
+</html>

@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0;
+            background: linear-gradient(360deg, #f8fafc 6%, #e2e8f0 20%, #d1fae5 100%);
             height: 100vh;
             display: flex;
             align-items: center;
@@ -24,8 +24,8 @@
            overflow: hidden; /* Sabse zaroori: Iske bina background image kone (corners) se bahar nikal aayegi */
            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); /* Premium 3D shadow */
            width: 100%;
-           max-width: 1400px; /* Badi screen pe isse zyada nahi failega */
-           height: 90vh; /* Screen ka 90% height lega */
+           max-width: 480px; /* Badi screen pe isse zyada nahi failega */
+           height: auto; 
          }
 
         .form-control {
@@ -37,11 +37,11 @@
 
         .form-control:focus {
             box-shadow: none;
-            border-color: #2563eb;
+            border-color: #10b981;
         }
 
         .btn-primary-custom {
-            background-color: #2563eb;
+            background-color: #10b981;
             color: white;
             border-radius: 50px;
             padding: 12px;
@@ -49,7 +49,7 @@
         }
 
         .btn-primary-custom:hover {
-            background-color: #1d4ed8;
+            background-color: #059669;
             color: white;
         }
 
@@ -79,14 +79,7 @@
             text-transform: titlecase;
         }
 
-        .right-side-bg {
-            /* YAHAN APNI IMAGE KA LINK DAALNA */
-            background-image: url('{% static "records/firstimg.png" %}');
-            background-color: #eef2f6;
-            /* Fallback color */
-            background-size: cover;
-            background-position: center;
-        }
+        
         .container-fluid {
             padding: 20px;
         }
@@ -98,13 +91,13 @@
 <body>
     <div class="curved-wrapper">
     <div class="container-fluid h-100 p-0">
-        <div class="row g-0 h-100 p-2 p-md-3">
-            <div class="col-lg-6 d-flex align-items-center justify-content-center bg-white p-4 ">
+        <div class="row g-0 h-100 p-2 p-md-3 justify-content-center align-items-center" >
+            <div class="col-12 d-flex align-items-center justify-content-center bg-white p-3 ">
                 <div style="max-width: 420px; width: 100%;">
 
-                    <p class="category-text mb-2" style="color: #1d4ed8; text-align: center;">iVault </p>
+                    <p class="category-text mb-2 fs-2" style="color: #10b981; text-align: center;">iVault </p>
                     <hr>
-                    <h1 class="fw-bold mb-2" style="font-size: 2.2rem; color: #111827;">Sign in to your account</h1>
+                    <!-- <h1 class="fw-bold mb-2" style="font-size: 2.2rem; color: #435148;">Log in your account</h1> -->
                     <p class="text-muted mb-4" style="font-size: 0.95rem;">Enter your credentials to view all insights
                     </p>
 
@@ -113,12 +106,20 @@
                         {{ error }}
                     </div>
                     {% endif %}
-
+                    {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}"
+                            style="color: red; background-color: #ffe6e6; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
                     <form method="POST" action="">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label fw-medium text-dark" style="font-size: 0.9rem;">Email
-                                address</label>
+                            <label class="form-label fw-medium text-dark" style="font-size: 0.9rem;">Username</label>
                             <input type="email" class="form-control" name="email" required
                                 placeholder="Enter your email address">
                         </div>
@@ -142,13 +143,12 @@
 
                     <div class="text-center mt-2">
                         <small class="text-muted">Don't have an account? <a href="{% url 'register_step1' %}"
-                                class="text-decoration-none fw-medium" style="color: #2563eb;">Register here</a></small>
+                                class="text-decoration-none fw-medium" style="color: #10b981;">Register here</a></small>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-6 d-none d-lg-block p-2">
-                <div class="w-100 h-100 rounded-4 right-side-bg"></div>
+            
             </div>
         </div>
     </div>

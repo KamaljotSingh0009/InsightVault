@@ -11,8 +11,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* Purple to Pink modern gradient */
-            background: linear-gradient(180deg, #e6e5e7, #8a8387);
+            background: linear-gradient(135deg, #e8f5f0 0%, #d1ece4 40%, #c8e6de 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -30,7 +29,7 @@
         }
 
         .profile-icon {
-            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            background: #10b981;
             color: white;
             width: 38px;
             height: 38px;
@@ -55,18 +54,18 @@
 
         /* Modern Dashed File Input */
         .file-drop-area {
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed #a7f3d0;
             border-radius: 16px;
             padding: 40px 20px;
             text-align: center;
-            background-color: #f8fafc;
+            background-color: #f0fdf9;
             transition: all 0.3s ease;
             position: relative;
         }
 
         .file-drop-area:hover {
-            border-color: #8B5CF6;
-            background-color: #f3e8ff;
+            border-color: #10b981;
+            background-color: #d1fae5;
         }
 
         .file-drop-area input[type="file"] {
@@ -86,7 +85,7 @@
         }
 
         .btn-primary-custom {
-            background: linear-gradient(135deg, #8B5CF6, #EC4899);
+            background: #10b981;
             color: white;
             border-radius: 50px;
             padding: 14px;
@@ -97,7 +96,8 @@
 
         .btn-primary-custom:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+            background: #059669;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
             color: white;
         }
 
@@ -105,7 +105,7 @@
             font-size: 0.8rem;
             font-weight: 700;
             letter-spacing: 1.5px;
-            color: #8B5CF6;
+            color: #10b981;
             text-transform: uppercase;
         }
     </style>
@@ -116,7 +116,7 @@
     <div class="container px-3">
         <div class="floating-nav d-flex justify-content-between align-items-center">
             <div class="fw-bold fs-4" style="color: #111827;">
-                <span style="color: #8B5CF6;">Insight</span>Vault
+                <span style="color: #10b981;">Insight</span>Vault
             </div>
 
             <div class="dropdown">
@@ -129,11 +129,11 @@
                     <li>
                         <h6 class="dropdown-header">My Account</h6>
                     </li>
-                    <li><a class="dropdown-item rounded-2 fw-medium mb-1" href="#">👤 My Profile</a></li>
+                    <li><a class="dropdown-item rounded-2 fw-medium mb-1" href="#"> My Profile</a></li>
                     <li>
                         <hr class="dropdown-divider">
                     </li>
-                    <li><a class="dropdown-item rounded-2 text-danger fw-medium" href="{% url 'logout' %}">🚪 Sign
+                    <li><a class="dropdown-item rounded-2 text-danger fw-medium" href="{% url 'logout' %}">  Sign
                             out</a></li>
                 </ul>
             </div>

@@ -1,0 +1,290 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Multiple Disease Prediction | InsightVault</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #d1fae5 100%);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styling based on your image */
+        .sidebar {
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 10px;
+            position: fixed;
+            width: 260px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-left: 10px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-btn:hover {
+            background: #f0f2f5;
+        }
+
+        .nav-btn.active {
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: 260px;
+            padding: 50px;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #f1f3f5;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-submit {
+            background: white;
+            border: 1px solid #ddd;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #f1f3f5;
+        }
+
+        /* Hide forms initially */
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title border-bottom pb-3">
+            <i class="fas fa-layer-group me-2"></i> Multiple Disease<br>Prediction System
+        </div>
+
+        <button class="nav-btn {% if active_tab == 'diabetes' %}active{% endif %}" onclick="switchTab('diabetes')">
+            <i class="fas fa-chart-line me-2"></i> Diabetes Prediction
+        </button>
+        <button class="nav-btn {% if active_tab == 'heart' %}active{% endif %}" onclick="switchTab('heart')">
+            <i class="far fa-heart me-2"></i> Heart Disease Prediction
+        </button>
+
+        <div style="position: absolute; bottom: 30px; width: 100%;">
+            <a href="{% url 'dashboard' %}" class="btn btn-lg btn-outline-secondary ms-2"> Back to Dashboard</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        {% if auto_filled %}
+        <div class="alert alert-info border-0 shadow-sm mb-4"> Some fields are Auto-filled from your latest report.
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <div id="diabetes-section" class="form-section {% if active_tab == 'diabetes' %}active{% endif %}">
+            <h2 class="fw-bold mb-4">Diabetes Prediction using ML</h2>
+
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="diabetes">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Number of Pregnancies</label>
+                        <input type="number" name="pregnancies" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Glucose Level</label>
+                        <input type="number" name="glucose" class="form-control" required
+                            value="{{ prefill_data.glucose|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Blood Pressure value</label>
+                        <input type="number" name="bp" class="form-control" required
+                            value="{{ prefill_data.blood_pressure|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Skin Thickness value</label>
+                        <input type="number" name="skin" class="form-control" value="20">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Insulin Level</label>
+                        <input type="number" name="insulin" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">BMI value</label>
+                        <input type="number" step="0.1" name="bmi" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Diabetes Pedigree Function value</label>
+                        <input type="number" step="0.01" name="dpf" class="form-control" value="0.5">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Age of the Person</label>
+                        <input type="number" name="age" class="form-control" required
+                            value="{{ prefill_data.age|default:'' }}">
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Diabetes Test Result</button>
+            </form>
+
+            {% if diabetes_submitted %}
+            <div
+                class="mt-4 p-3 rounded text-white {% if diabetes_pred == 1 %}bg-danger{% else %}bg-success{% endif %}">
+                <h5 class="m-0">{% if diabetes_pred == 1 %}High Risk of Diabetes Detected!{% else %}The Person is not
+                    Diabetic.{% endif %}</h5>
+            </div>
+            {% endif %}
+        </div>
+
+
+        <div id="heart-section" class="form-section {% if active_tab == 'heart' %}active{% endif %}">
+            <h2 class="fw-bold mb-4">Heart Disease Prediction using ML</h2>
+
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="heart">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Age</label>
+                        <input type="number" name="age" class="form-control" required
+                            value="{{ prefill_data.age|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Sex (1=M, 0=F)</label>
+                        <select name="sex" class="form-select">
+                            <option value="1">Male</option>
+                            <option value="0">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Chest Pain Type (0-3)</label>
+                        <select name="cp" class="form-select">
+                            <option value="0">Typical Angina</option>
+                            <option value="1">Atypical</option>
+                            <option value="2">Non-anginal</option>
+                            <option value="3">Asymptomatic</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Resting BP (mm Hg)</label>
+                        <input type="number" name="bp" class="form-control" required
+                            value="{{ prefill_data.blood_pressure|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Cholesterol (mg/dl)</label>
+                        <input type="number" name="chol" class="form-control" required
+                            value="{{ prefill_data.cholesterol|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Glucose for FBS (mg/dl)</label>
+                        <input type="number" name="glucose" class="form-control" required
+                            value="{{ prefill_data.glucose|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Resting ECG (0-2)</label>
+                        <input type="number" name="restecg" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Max Heart Rate</label>
+                        <input type="number" name="thalach" class="form-control" required placeholder="e.g. 150">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Ex. Angina (1=Y, 0=N)</label>
+                        <select name="exang" class="form-select">
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Oldpeak</label>
+                        <input type="number" step="0.1" name="oldpeak" class="form-control" value="1.0">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Slope (0-2)</label>
+                        <input type="number" name="slope" class="form-control" value="1">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small mb-1">Vessels (0-3)</label>
+                        <input type="number" name="ca" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="text-muted small mb-1">Thal (0-3)</label>
+                        <input type="number" name="thal" class="form-control" value="2">
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Heart Test Result</button>
+            </form>
+
+            {% if heart_submitted %}
+            <div class="mt-4 p-3 rounded text-white {% if heart_pred == 1 %}bg-danger{% else %}bg-success{% endif %}">
+                <h5 class="m-0">{% if heart_pred == 1 %}High Risk of Heart Disease Detected!{% else %}Your Heart looks
+                    Healthy.{% endif %}</h5>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all buttons and forms
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(sec => sec.classList.remove('active'));
+
+            // Add active class to clicked button and corresponding form
+            if (tabName === 'diabetes') {
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+                document.getElementById('diabetes-section').classList.add('active');
+            } else if (tabName === 'heart') {
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                document.getElementById('heart-section').classList.add('active');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

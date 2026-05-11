@@ -1,0 +1,402 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Recommendations - InsightVault</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #d1fae5 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 10px;
+            position: fixed;
+            width: 260px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            color: #10b981;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-left: 10px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #f0f2f5;
+            color: #10b981;
+        }
+
+        .nav-btn.active {
+            background: #10b981;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+        }
+
+        .b2b-badge {
+            font-size: 0.75rem;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        /* CARDS & INPUTS */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            border: 1px solid #d1fae5;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .preference-radio {
+            display: none;
+        }
+
+        .preference-label {
+            padding: 10px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .preference-radio:checked+.preference-label {
+            background: #dcfce7;
+            border-color: #10b981;
+            color: #059669;
+        }
+
+        .ai-btn {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: 0.3s;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ai-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        }
+
+        .ai-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: #94a3b8;
+            box-shadow: none;
+        }
+
+        /* RESULTS AREA */
+        .food-card {
+            border-radius: 15px;
+            padding: 20px;
+            height: 100%;
+            border: none;
+        }
+
+        .super-food {
+            background: #ecfdf5;
+            border-left: 5px solid #10b981;
+        }
+
+        .risk-food {
+            background: #fef2f2;
+            border-left: 5px solid #ef4444;
+        }
+
+        .list-group-item {
+            background: transparent;
+            border: none;
+            padding: 8px 0;
+            font-weight: 500;
+        }
+
+        .list-group-item i {
+            width: 25px;
+        }
+
+        /* Dynamic Panel fixed height to prevent jumping */
+        #dynamic-panel {
+            min-height: 450px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title border-bottom pb-3">
+            <i class="fa-solid fa-shield-heart"></i> InsightVault
+        </div>
+        <div class="text-muted small fw-bold mb-2 ps-3 mt-3">DASHBOARD</div>
+        <a href="{% url 'dashboard' %}" class="nav-btn"><i class="fas fa-home me-2"></i> Home</a>
+        <a href="{% url 'vault' %}" class="nav-btn"><i class="fas fa-folder-open me-2"></i> My Vault</a>
+        <a href="#" class="nav-btn active"><i class="fas fa-leaf me-2"></i> Recommendations</a>
+    </div>
+
+    <div class="main-content">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="b2b-badge mb-2 d-inline-block"><i class="fas fa-microchip text-primary"></i> POWERED BY
+                    INSIGHTVAULT AI</span>
+                <h2 class="fw-bold mb-1">AI Diet Recommendations 🥗</h2>
+                <p class="text-muted mb-0">Personalized dietary suggestions based on your latest medical reports.</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary rounded-pill fw-bold">Back to Dashboard</a>
+        </div>
+
+        <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex align-items-center"
+            style="background: #fffbeb; color: #b45309;">
+            <i class="fa-solid fa-triangle-exclamation fs-3 me-3"></i>
+            <div>
+                <strong>Medical Disclaimer:</strong> These recommendations are generated by AI based on your recent
+                report trends. It does not replace professional medical advice. Always consult your doctor before making
+                drastic dietary changes.
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <div class="glass-card h-100">
+                    <h5 class="fw-bold text-dark mb-4"><i class="fas fa-sliders-h text-success me-2"></i> Preferences
+                    </h5>
+
+                    {% csrf_token %}
+                    <label class="form-label fw-bold text-muted small text-uppercase">Dietary Type</label>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <input type="radio" name="diet" id="veg" class="preference-radio" checked>
+                        <label for="veg" class="preference-label"><i class="fas fa-carrot me-1"></i> Pure Veg</label>
+
+                        <input type="radio" name="diet" id="egg" class="preference-radio">
+                        <label for="egg" class="preference-label"><i class="fas fa-egg me-1"></i> Eggetarian</label>
+
+                        <input type="radio" name="diet" id="nonveg" class="preference-radio">
+                        <label for="nonveg" class="preference-label"><i class="fas fa-drumstick-bite me-1"></i>
+                            Non-Veg</label>
+                    </div>
+
+                    <label class="form-label fw-bold text-muted small text-uppercase mt-2">Any Allergies?
+                        (Optional)</label>
+                    <input type="text" id="allergies-input" class="form-control rounded-pill px-3 py-2 mb-4"
+                        placeholder="e.g., Peanuts, Lactose...">
+
+                    <button id="generate-btn" class="ai-btn mt-3" onclick="generateDiet()">
+                        <span id="btn-text"><i class="fas fa-magic me-2"></i> Get Recommendations</span>
+                        <span id="btn-loader" style="display: none;">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Analyzing...
+                        </span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+
+                <div id="error-container"></div>
+
+                <div id="dynamic-panel" class="glass-card h-100 d-flex flex-column justify-content-center">
+
+                    <div id="empty-state" class="text-center py-4">
+                        <div class="display-1 text-muted mb-3" style="opacity: 0.3;">🥗</div>
+                        <h4 class="text-muted">Ready for personalized recommendations?</h4>
+                        <p class="text-muted small w-75 mx-auto">Select your preferences on the left and hit generate.
+                            Our AI will analyze your latest vault reports to suggest what to eat and avoid.</p>
+                    </div>
+
+                    <div id="result-area" style="display: none;">
+                        <div class="mb-4 pb-3 border-bottom">
+                            <h5 class="fw-bold text-dark mb-3"><i class="fas fa-brain text-success me-2"></i> Clinical
+                                Analysis</h5>
+                            <p class="text-muted" style="line-height: 1.6;" id="analysis-text"></p>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="food-card super-food shadow-sm">
+                                    <h5 class="fw-bold text-success mb-3"><i class="fas fa-check-circle me-2"></i>
+                                        Recommend (Eat More)</h5>
+                                    <ul class="list-group list-group-flush bg-transparent" id="super-foods-list"></ul>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="food-card risk-food shadow-sm">
+                                    <h5 class="fw-bold text-danger mb-3"><i class="fas fa-times-circle me-2"></i>
+                                        Restrict (Avoid)</h5>
+                                    <ul class="list-group list-group-flush bg-transparent" id="risk-foods-list"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function generateDiet() {
+            // UI Elements
+            const btn = document.getElementById('generate-btn');
+            const btnText = document.getElementById('btn-text');
+            const btnLoader = document.getElementById('btn-loader');
+            const emptyState = document.getElementById('empty-state');
+            const resultArea = document.getElementById('result-area');
+            const dynamicPanel = document.getElementById('dynamic-panel');
+            const errorContainer = document.getElementById('error-container');
+
+            // 1. Lock Button & Show Loader
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline-block';
+
+            // Clear previous errors
+            errorContainer.innerHTML = '';
+
+            const dietPref = document.querySelector('input[name="diet"]:checked').id;
+            const allergies = document.getElementById('allergies-input').value;
+
+            try {
+                const response = await fetch("{% url 'smart_diet' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        diet_preference: dietPref,
+                        allergies: allergies
+                    })
+                });
+
+                const result = await response.json();
+
+                // 2. Unlock Button & Restore Text
+                btn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnLoader.style.display = 'none';
+
+                if (result.status === 'success') {
+                    // Populate Data
+                    document.getElementById('analysis-text').innerHTML = result.data.analysis;
+
+                    const superList = document.getElementById('super-foods-list');
+                    superList.innerHTML = '';
+                    result.data.super_foods.forEach(food => {
+                        superList.innerHTML += `<li class="list-group-item text-success"><i class="fas fa-check"></i> ${food}</li>`;
+                    });
+
+                    const riskList = document.getElementById('risk-foods-list');
+                    riskList.innerHTML = '';
+                    result.data.risk_foods.forEach(food => {
+                        riskList.innerHTML += `<li class="list-group-item text-danger"><i class="fas fa-times"></i> ${food}</li>`;
+                    });
+
+                    // 3. Swap UI (Hide Empty State, Show Results)
+                    emptyState.style.display = 'none';
+                    resultArea.style.display = 'block';
+                    dynamicPanel.classList.remove('justify-content-center'); // Align content to top
+
+                } else {
+                    showError(result.message);
+                }
+
+            } catch (error) {
+                // Unlock Button on Error
+                btn.disabled = false;
+                btnText.style.display = 'inline-block';
+                btnLoader.style.display = 'none';
+                showError("Network error! Please check your internet connection and try again.");
+            }
+        }
+
+        function showError(message) {
+            const errorHtml = `
+                <div class="alert alert-danger mb-4 fw-bold shadow-sm rounded-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i> ${message}
+                </div>
+            `;
+            document.getElementById('error-container').innerHTML = errorHtml;
+
+            // Revert UI to empty state if an error happens
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('result-area').style.display = 'none';
+            document.getElementById('dynamic-panel').classList.add('justify-content-center');
+        }
+    </script>
+
+</body>
+
+</html>

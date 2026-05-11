@@ -1,0 +1,91 @@
+{% extends 'records/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-success mb-0"><i class="fa-solid fa-pills me-2"></i>My Medical Prescriptions</h3>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-4 bg-light">
+
+            {% for p in past_prescriptions %}
+            <div class="card border-0 shadow-sm mb-4 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-success-subtle text-success fs-6"><i
+                                class="fa-regular fa-calendar me-1"></i> {{ p.created_at|date:"d M Y, h:i A" }}</span>
+                        <span class="fw-bold text-secondary"><i class="fa-solid fa-user-doctor me-1"></i> Dr. {{ p.doctor.first_name }} {{ p.doctor.last_name }}</span>
+                    </div>
+
+                    {% if p.diagnosis_or_symptoms %}
+                    <div class="mb-3">
+                        <span class="text-muted small text-uppercase fw-bold">Diagnosis</span>
+                        <p class="mb-0 fw-medium text-dark">{{ p.diagnosis_or_symptoms }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3 p-3 bg-light rounded-3 border">
+                        <span class="text-muted small text-uppercase fw-bold d-block mb-2">Prescribed Medicines</span>
+                        <span style="white-space: pre-wrap; font-family: monospace; font-size: 1.05rem;">{{ p.medicines }}</span>
+                    </div>
+
+                    {% if p.notes %}
+                    <div class="text-muted small">
+                        <i class="fa-solid fa-circle-info me-1"></i> <strong>Doctor's Note:</strong> {{ p.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="fa-solid fa-file-prescription fa-4x mb-3 opacity-25"></i>
+                <h5 class="fw-bold">No Prescriptions Yet</h5>
+                <p>Your doctors haven't added any digital prescriptions to your vault yet.</p>
+            </div>
+            {% endfor %}
+
+            <!-- PAGINATION CONTROLS (Numbered + Next/Prev) -->
+           
+            {% if past_prescriptions.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center pagination-sm">
+
+                    <!-- First Page Arrow -->
+                    <li class="page-item {% if not past_prescriptions.has_previous %}disabled{% endif %}">
+                        <a class="page-link text-success" href="?page=1" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo; First</span>
+                        </a>
+                    </li>
+
+                    <!-- PAGE NUMBERS -->
+                    {% for num in past_prescriptions.paginator.page_range %}
+                    {% if past_prescriptions.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link bg-success border-success">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link text-success" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Last Page Arrow -->
+                    <li class="page-item {% if not past_prescriptions.has_next %}disabled{% endif %}">
+                        <a class="page-link text-success" href="?page={{ past_prescriptions.paginator.num_pages }}"
+                            aria-label="Last">
+                            <span aria-hidden="true">Last &raquo;&raquo;</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+            <p class="text-center text-muted small mt-2">Showing Page {{ past_prescriptions.number }} of {{ past_prescriptions.paginator.num_pages }}</p>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

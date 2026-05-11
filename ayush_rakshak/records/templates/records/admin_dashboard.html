@@ -1,0 +1,114 @@
+{% extends 'records/base.html' %}
+
+{% block content %}
+<!-- Welcome Banner Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0 border-start border-success border-5">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <!-- Ye Doctor ka username automatically uthayega -->
+                    <h4 class="text-emerald mb-1 fw-bold">Welcome, Dr. {{ request.user.username|title }}</h4>
+                    <p class="text-muted mb-0">Manage your clinic's patient records and risk analysis here.</p>
+                </div>
+                <i class="fa-solid fa-stethoscope fa-3x text-emerald opacity-50"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient List Table Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div
+                class="card-header bg-white border-bottom py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-bed-pulse"></i> Active Patients</h5>
+            
+                <!-- SEARCH FORM -->
+                <form method="GET" action="" class="d-flex" style="max-width: 400px; width: 100%;">
+                    <div class="input-group shadow-sm">
+                        <!-- request.GET.q se jo search kiya hai wo box mein likha hua reh jata hai -->
+                        <input type="text" name="q" class="form-control" placeholder="Search by Patient ID or Phone..."
+                            value="{{ request.GET.q }}">
+            
+                        <button class="btn btn-success" type="submit">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+            
+                        <!-- Clear Button: Sirf tab dikhega jab user ne kuch search kiya ho -->
+                        {% if request.GET.q %}
+                        <a href="?" class="btn btn-outline-danger" title="Clear Search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age & Contact</th>
+                                <th>Total Reports</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for data in dashboard_data %}
+                            <!-- Ye loop har ek patient ke liye ek nayi row (line) banayega -->
+                            <tr>
+                                <!-- Patient ID (Hum User ID ko thoda stylish bana ke dikha rahe hain) -->
+                                <td><span class="fw-bold text-secondary">{{ data.profile.patient_id}}</span></td>
+                        
+                                <!-- Name aur Email -->
+                                <td>
+                                    <div class="fw-bold text-dark">{{ data.profile.user.first_name|title }} {{ data.profile.user.last_name|title}}</div>
+                                    <div class="small text-muted">{{ data.profile.user.email }}</div>
+                                </td>
+                        
+                                <!-- Age aur Phone number dikhane ke liye -->
+                                <td>
+                                    <div class="text-dark">{{ data.profile.age }} yrs</div>
+                                    <div class="small text-muted">{{ data.profile.phone }}</div>
+                                </td>
+                        
+                                <!-- Total Reports -->
+                                <td><span class="badge bg-secondary rounded-pill">{{ data.total_reports }} Reports</span></td>
+                        
+                                <!-- SMART RISK ENGINE (Red/Green logic) -->
+                                <td>
+                                    {% if data.status == 'Reports Available' %}
+                                    <span class="badge bg-success rounded-pill"><i class="fa-solid fa-check-circle"></i> Reports Available</span>
+                                    {% else %}
+                                    <!-- Agar reports 0 hain toh Needs Attention dikhayega -->
+                                    <span class="badge bg-danger rounded-pill"><i class="fa-solid fa-triangle-exclamation"></i> No Reports</span>
+                                    {% endif %}
+                                </td>
+                        
+                                <!-- Action Button -->
+                                <td>
+                                     <a href="{% url 'patient_file' data.profile.user.id %}" class="btn btn-sm btn-outline-success">View File <i class="fa-solid fa-arrow-right"></i></a>                                </td>
+                            </tr>
+                            {% empty %}
+                            <!-- Agar is doctor ka koi patient hi nahi hai -->
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fa-solid fa-folder-open fa-2x mb-2 opacity-50"></i>
+                                    <p class="mb-0">No active patients found for your clinic.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

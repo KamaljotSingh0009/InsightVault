@@ -175,6 +175,7 @@
                 class="mt-4 p-3 rounded text-white {% if diabetes_pred == 1 %}bg-danger{% else %}bg-success{% endif %}">
                 <h5 class="m-0">{% if diabetes_pred == 1 %}High Risk of Diabetes Detected!{% else %}The Person is not
                     Diabetic.{% endif %}</h5>
+                    <p class="m-0">Confidence: {{ diabetes_confidence }}%</p>
             </div>
             {% endif %}
         </div>
@@ -262,6 +263,7 @@
             <div class="mt-4 p-3 rounded text-white {% if heart_pred == 1 %}bg-danger{% else %}bg-success{% endif %}">
                 <h5 class="m-0">{% if heart_pred == 1 %}High Risk of Heart Disease Detected!{% else %}Your Heart looks
                     Healthy.{% endif %}</h5>
+                    <p class="m-0">Confidence: {{ heart_conf }}%</p>
             </div>
             {% endif %}
         </div>

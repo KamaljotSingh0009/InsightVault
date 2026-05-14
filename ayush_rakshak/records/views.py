@@ -437,7 +437,7 @@ def risk_analysis(request):
 
     # PREDICTION LOGIC
     if request.method == 'POST':
-        # Yahan hum check karenge ki kis form ka submit button daba
+        # check karenge ki kis form ka submit button daba
         form_type = request.POST.get('form_type')
         context['active_tab'] = form_type # Jisse page refresh hone par wahi tab khula rahe
         
@@ -453,7 +453,12 @@ def risk_analysis(request):
                 age = float(request.POST.get('age', 0))
 
                 diabetes_data = [pregnancies, glucose, bp, skin, insulin, bmi, dpf, age]
-                context['diabetes_pred'] = get_diabetes_risk(diabetes_data)
+
+                # Yahan prediction aur confidence dono nikal kar context mein daala
+                result_dict= get_diabetes_risk(diabetes_data)
+                if result_dict:
+                       context['diabetes_pred'] = result_dict['risk_status']
+                       context['diabetes_confidence'] = result_dict['confidence']
                 context['diabetes_submitted'] = True
 
             elif form_type == 'heart':
@@ -487,7 +492,11 @@ def risk_analysis(request):
                 elif slope == 0.0: heart_data[20] = 1
                 if thal in [0.0, 1.0]: heart_data[21] = 1
 
-                context['heart_pred'] = get_heart_risk(heart_data)
+                #Yahan again same logic se prdiction or confidence
+                result_dict = get_heart_risk(heart_data)
+                if result_dict:
+                    context['heart_pred'] = result_dict['risk_status']
+                    context['heart_conf'] = result_dict['confidence']
                 context['heart_submitted'] = True
 
         except Exception as e:
@@ -775,8 +784,8 @@ def my_prescriptions(request):
     # Sirf us patient ki history nikalo jo login hai
     my_history = Prescription.objects.filter(patient=request.user).order_by('-created_at')
     
-    # --- YAHAN SE NAYA PAGINATION LOGIC SHURU ---
-    # Paginator ko bolo ki 1 page pe sirf 5 prescriptions dikhani hain
+    # -- PAGINATION LOGIC SHURU ---
+    # Paginator 1 page pe sirf 5 prescriptions dikhani hain
     paginator = Paginator(my_history, 5) 
     page_number = request.GET.get('page') # URL se page number uthao (e.g., ?page=2)
     past_prescriptions = paginator.get_page(page_number)

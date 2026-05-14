@@ -7,7 +7,7 @@ _heart_model = None
 _diabetes_model = None
 
 def load_models_if_needed():
-    """Ye function sir dard bachayega. Models ko memory mein sirf 1 baar load karega."""
+    # Ye function sir dard bachayega. Models ko memory mein sirf 1 baar load karega.
     global _heart_model, _diabetes_model
     
     # Heart model caching
@@ -42,9 +42,20 @@ def get_heart_risk(input_data):
         return None
         
     try:
-        # Prediction nikalna (Machine Learning hamesha 2D array [[]] mangti hai)
-        result = _heart_model.predict([input_data])
-        return result[0]
+        # Prediction aur Probability dono nikal rahe hain
+        prediction = _heart_model.predict([input_data])[0]
+        probabilities = _heart_model.predict_proba([input_data])[0]
+        
+        # Confidence percentage calculate karna
+        if prediction == 1:
+            confidence = probabilities[1] * 100  # High Risk ki probability
+        else:
+            confidence = probabilities[0] * 100  # Low Risk ki probability
+            
+        return {
+            'risk_status': prediction,
+            'confidence': round(confidence, 2)
+        }
     except Exception as e:
         print(f"Heart prediction mein error: {e}")
         return None
@@ -58,8 +69,20 @@ def get_diabetes_risk(input_data):
         return None
         
     try:
-        result = _diabetes_model.predict([input_data])
-        return result[0]
+        # Prediction aur Probability dono nikal rahe hain
+        prediction = _diabetes_model.predict([input_data])[0]
+        probabilities = _diabetes_model.predict_proba([input_data])[0]
+        
+        # Confidence percentage calculate karna
+        if prediction == 1:
+            confidence = probabilities[1] * 100  # High Risk ki probability
+        else:
+            confidence = probabilities[0] * 100  # Low Risk ki probability
+            
+        return {
+            'risk_status': prediction,
+            'confidence': round(confidence, 2)
+        }
     except Exception as e:
         print(f"Diabetes prediction mein error: {e}")
         return None
